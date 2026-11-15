@@ -1,53 +1,59 @@
-
 name: Build Mishu Android APK
-
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "android/**"
-      - ".github/workflows/android.yml"
-
+      - 'app/**'
+      - 'Mishu/app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'Mishu/build.gradle'
+      - 'Mishu/settings.gradle'
+      - '.github/workflows/android.yml'
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - name: Show checked-out structure
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 5 -name settings.gradle -print
+      - name: Find Android project
+        id: project
+        shell: bash
+        run: |
+          if [[ -f settings.gradle && -f app/build.gradle ]]; then
+            echo 'dir=.' >> "$GITHUB_OUTPUT"
+          elif [[ -f Mishu/settings.gradle && -f Mishu/app/build.gradle ]]; then
+            echo 'dir=Mishu' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Android project not found. Upload the CONTENTS of the ZIP, not just android.yml.' >&2
+            exit 1
+          fi
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
         with:
-          packages: "platform-tools platforms;android-35 build-tools;35.0.0"
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build Debug APK
-        working-directory: android
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build Android debug APK
+        shell: bash
+        env:
+          PROJECT_DIR: ${{ steps.project.outputs.dir }}
         run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          cd "$PROJECT_DIR"
+          gradle --no-daemon assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
         with:
-          name: Mishu-Debug-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: Mishu-Android-Debug-APK
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error

@@ -1,0 +1,1 @@
+Mishu 2.6: reproductor integrado HTML5 para MP4/WebM/Ogg; vista previa embebida de YouTube, Vimeo y Google Drive; ampliación en modal y enlace alternativo externo. Algunos proveedores restringen la reproducción embebida. No se ha probado en dispositivo real.\n

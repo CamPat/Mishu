@@ -6,6 +6,10 @@ import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.PermissionRequest;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceError;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.content.Intent;
@@ -49,7 +53,7 @@ public class MainActivity extends Activity {
  }
  @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);web=new WebView(this);setContentView(web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);
-  web.getSettings().setAllowContentAccess(true);web.addJavascriptInterface(new Bridge(),"MishuNative");
+  web.getSettings().setAllowContentAccess(true);web.getSettings().setMediaPlaybackRequiresUserGesture(false);web.addJavascriptInterface(new Bridge(),"MishuNative");
   web.setWebChromeClient(new WebChromeClient(){
    @Override public boolean onShowFileChooser(WebView view,ValueCallback<Uri[]> callback,FileChooserParams params){
     if(fileCallback!=null)fileCallback.onReceiveValue(null);fileCallback=callback;

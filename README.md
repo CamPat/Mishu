@@ -34,3 +34,37 @@ El workflow `.github/workflows/android.yml` localiza automáticamente el proyect
 Sube **el contenido completo** de este ZIP a la raíz del repositorio `CamPat/Mishu` (no subas solamente el ZIP ni solamente `android.yml`). La raíz debe contener `app/`, `windows/`, `build.gradle`, `settings.gradle` y `.github/workflows/android.yml` y `windows.yml`. También se detecta una carpeta envolvente `Mishu/` si se subió así. Si GitHub sigue diciendo que no existe `/android`, está ejecutando un workflow antiguo: sustituye `.github/workflows/android.yml` y confirma el commit en la rama `main`.
 
 En Actions ejecuta `Build Mishu Android APK` y `Build Mishu Windows EXE` por separado. Los artefactos se adjuntan solo si la compilación tiene éxito. No se ha probado la compilación en los runners de GitHub ni en dispositivos reales.
+
+
+## Actualización 1.5 (interfaz)
+- Entradas de texto ajustan su altura al contenido y al escribir.
+- Reparado el botón de edición de título que mostraba código JavaScript.
+- Menús de los tres puntos de temas anclados al botón, ajustados a los bordes de pantalla.
+- Vista PDF conserva su diseño y ofrece «Exportar / guardar PDF» dentro de la vista, mediante el diálogo de impresión/guardar del sistema.
+- No se han realizado pruebas en dispositivos físicos ni compilado binarios.
+
+
+## Versión 1.6
+- Selección de texto: barra contextual con Buscar relaciones y Ocultar en modo estudio, situada junto al campo seleccionado sin salirse de pantalla.
+- En modo estudio: campos de solo lectura, controles de edición ocultos y bloqueo de operaciones de edición.
+- Menús contextuales: anclados al botón, con ajuste automático horizontal y vertical.
+- Los cambios no eliminan datos existentes.
+
+
+## Actualización 1.7: cabecera y pantalla completa Android
+- La cabecera de la interfaz muestra «¡Vamos a estudiar!» en español y «Let's study!» en inglés, cambiando al elegir idioma. El nombre Mishu y el icono de gato se conservan como identidad de la aplicación instalada, pero no en la cabecera interior.
+- Android oculta la barra superior del sistema (hora, batería, señal) mediante FLAG_FULLSCREEN; mantiene la barra de navegación del sistema.
+- Windows mantiene la barra de título propia del sistema operativo.
+- No se han compilado APK/EXE ni realizado pruebas en dispositivos reales.
+
+
+## Mishu 1.8 — Icono y autoría
+- Icono Android rediseñado: gatito minimalista de mayor tamaño con fondo de color a sangre, sin márgenes blancos. Incluye recursos de icono adaptativo y versiones PNG para Android anteriores. El lanzador puede aplicar su propia máscara circular o cuadrada.
+- Descripción de aplicación Android: «Mishu: biblioteca personal de estudio y notas plegables. Desarrollado por CamPat.»
+- No se modificaron los datos guardados ni el identificador de aplicación.
+- Para ver el nuevo icono, recompila e instala la actualización; algunos lanzadores mantienen temporalmente una copia en caché.
+
+## Mishu 1.9 — Fuentes
+- Fuentes adicionales, incluyendo Comic Sans MS (usa alternativa cursiva si no está instalada en el dispositivo).
+- El selector conserva la fuente actual.
+- Opción «Editor de estilo» sin icono de paleta.

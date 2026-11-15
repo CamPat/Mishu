@@ -2,6 +2,7 @@ package com.mishu.app;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
@@ -46,7 +47,7 @@ public class MainActivity extends Activity {
    for(String k:new String[]{"collections","folders","notes","trash","templates"})if(o.optJSONArray(k)==null)return false;
    return true;}catch(Exception e){return false;}}
  }
- @Override public void onCreate(Bundle state){super.onCreate(state);storage=new Storage(this);web=new WebView(this);setContentView(web);
+ @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);web=new WebView(this);setContentView(web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);
   web.getSettings().setAllowContentAccess(true);web.addJavascriptInterface(new Bridge(),"MishuNative");
   web.setWebChromeClient(new WebChromeClient(){

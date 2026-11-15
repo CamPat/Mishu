@@ -1,0 +1,46 @@
+name: Build Mishu Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'windows/**'
+      - 'Mishu/windows/**'
+      - 'app/src/main/assets/**'
+      - 'Mishu/app/src/main/assets/**'
+      - '.github/workflows/windows.yml'
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate Windows sources
+        id: locate
+        shell: pwsh
+        run: |
+          if ((Test-Path 'windows/Mishu.py') -and (Test-Path 'app/src/main/assets/index.html')) { $root='.' }
+          elseif ((Test-Path 'Mishu/windows/Mishu.py') -and (Test-Path 'Mishu/app/src/main/assets/index.html')) { $root='Mishu' }
+          else { Get-ChildItem -Force; throw 'Windows sources not found. Upload the complete project.' }
+          "root=$root" >> $env:GITHUB_OUTPUT
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip pyinstaller pywebview
+      - name: Build Windows executable
+        shell: pwsh
+        env:
+          PROJECT_ROOT: ${{ steps.locate.outputs.root }}
+        run: |
+          $root = (Resolve-Path $env:PROJECT_ROOT).Path
+          $source = Join-Path $root 'windows/Mishu.py'
+          $html = Join-Path $root 'app/src/main/assets/index.html'
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --name Mishu --distpath (Join-Path $root 'dist') --workpath (Join-Path $root 'build-pyinstaller') --specpath (Join-Path $root 'windows') --add-data "${html};app/src/main/assets" $source
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mishu-Windows-EXE
+          path: ${{ steps.locate.outputs.root }}/dist/Mishu.exe
+          if-no-files-found: error

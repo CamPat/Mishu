@@ -68,3 +68,21 @@ En Actions ejecuta `Build Mishu Android APK` y `Build Mishu Windows EXE` por sep
 - Fuentes adicionales, incluyendo Comic Sans MS (usa alternativa cursiva si no está instalada en el dispositivo).
 - El selector conserva la fuente actual.
 - Opción «Editor de estilo» sin icono de paleta.
+\n\n## Mishu 2.1\n- Selección de texto: ocultar, negrita, cursiva, subrayar y resaltar en seis colores. Las marcas se almacenan como rangos, sin insertar {{ }} en el contenido.\n- Modo estudio: contenido de solo lectura y respuestas ocultas pulsables.\n- Vista PDF: botón Volver y exportar desde la vista.\n- Limitación: marcas que se solapan con texto editado se eliminan para evitar desplazamientos incorrectos.\n
+
+## Mishu 2.2 — Biblioteca y fuentes
+- Las colecciones y carpetas empiezan contraídas al abrir la biblioteca. Se expanden al pulsar su nombre o flecha y se contraen al volver a pulsarlo. El estado de expansión es temporal y no modifica ni elimina notas.
+- El selector de fuentes utiliza una lista propia con cada nombre representado en su tipografía. En Android algunas fuentes no están instaladas; se usa una fuente alternativa del sistema.
+- No se han compilado APK/EXE ni ejecutado pruebas en dispositivos físicos.
+
+
+## Mishu 2.3 — PDF con estilos predeterminados
+La vista PDF se abre con la configuración visual actual. Dentro de la vista, «Sin estilo» permite alternar a un documento blanco y negro sin modificar la nota ni sus preferencias. La exportación utiliza impresión del sistema.
+
+
+## Mishu 2.4: orden y navegación secuencial
+- Título de la nota destacado sobre los temas.
+- Anterior/Siguiente dentro de la misma carpeta, usando el orden visible de la biblioteca.
+- Al pulsar Siguiente en la última nota, se crea una nota nueva inmediatamente después de ella.
+- Botones ↑/↓ para reordenar colecciones, carpetas y notas dentro de su grupo.
+- El orden se conserva en el estado local y las exportaciones JSON.

@@ -56,5 +56,14 @@ if __name__ == '__main__':
     api = API()
     bundle_root = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
     html = bundle_root / 'app' / 'src' / 'main' / 'assets' / 'index.html'
-    webview.create_window('Mishu 🐱', html.as_uri(), js_api=api, width=1100, height=780)
+    window = webview.create_window('Mishu 🐱', html.as_uri(), js_api=api, width=1100, height=780)
+    def open_arg():
+        if len(sys.argv) < 2:
+            return
+        file = Path(sys.argv[1])
+        if file.suffix.lower() != '.mishu' or not file.is_file() or file.stat().st_size > 20*1024*1024:
+            return
+        payload = file.read_text(encoding='utf-8')
+        window.evaluate_js('window.mishuOpenExternal(' + json.dumps(payload, ensure_ascii=True) + ')')
+    window.events.loaded += open_arg
     webview.start(private_mode=False)

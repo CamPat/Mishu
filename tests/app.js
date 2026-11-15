@@ -100,8 +100,13 @@ function printNotePDF(keepStyle=true){
   const n=findNote(current);if(!n)return;
   printPDFDocument([n],n.title);
 }
+let pdfPreviewFrame=null;
+function closePDFPreview(fromHistory=false){if(!pdfPreviewFrame)return;pdfPreviewFrame.remove();pdfPreviewFrame=null;document.body.style.overflow='';if(!fromHistory&&history.state?.mishuPDFPreview)history.back()}
+window.addEventListener('popstate',()=>{if(pdfPreviewFrame)closePDFPreview(true)});
+function renderMarkedTextForPDF(node){const clean={...node,marks:(node.marks||[]).filter(m=>m.type!=='hidden')};return renderMarkedText(clean,false)}
 function printPDFDocument(notes,documentTitle){
-  const w=window.open('','_blank');if(!w)return alert('No se pudo abrir la vista PDF');
+  if(pdfPreviewFrame)closePDFPreview();
+  const frame=document.createElement('iframe');frame.id='mishu-pdf-preview';frame.title='Vista previa PDF';frame.style.cssText='position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483646;background:white';document.body.appendChild(frame);pdfPreviewFrame=frame;document.body.style.overflow='hidden';history.pushState({mishuPDFPreview:true},'',location.href);const w=frame.contentWindow;w.document.open();
   const s=db.style||{};
   const cssColor=(v,fallback)=>/^#[0-9a-fA-F]{3,8}$/.test(String(v||''))?v:fallback;
   const safeFont=String(s.font||'system-ui').replace(/[^a-zA-Z0-9 ,\-"']/g,'');
@@ -109,7 +114,7 @@ function printPDFDocument(notes,documentTitle){
   const lineWeight=Math.max(1,Math.min(12,Number(s.weight)||2));
   const lineSpacing=Math.max(0,Math.min(40,Number(s.spacing)||10));
   const pattern=['dotted','dashed','solid'].includes(s.pattern)?s.pattern:'solid';
-  const walk=(nodes,depth=0)=>nodes.map(x=>`<section class="pdf-node" style="margin-left:${Math.min(depth,12)*12}px"><h3 style="font-size:${Math.max(12,fontSize+5-depth*2)}px">${esc(x.title)}</h3><div class="pdf-content">${renderMarkedText(x,false)}</div>${walk(x.children||[],depth+1)}</section>`).join('');
+  const walk=(nodes,depth=0)=>nodes.map(x=>`<section class="pdf-node" style="margin-left:${Math.min(depth,12)*12}px"><h3 style="font-size:${Math.max(12,fontSize+5-depth*2)}px">${esc(x.title)}</h3><div class="pdf-content">${renderMarkedTextForPDF(x)}</div>${walk(x.children||[],depth+1)}</section>`).join('');
   const themed=`--pdf-bg:${cssColor(s.bg,'#fff')};--pdf-card:${cssColor(s.card,'#fff')};--pdf-entry:${cssColor(s.entry,'#fff')};--pdf-ink:${cssColor(s.ink,'#292332')};--pdf-title:${cssColor(s.title,'#292332')};--pdf-line:${cssColor(s.line,'#c4a8db')};--pdf-font:${safeFont||'system-ui'};--pdf-fs:${fontSize}px;--pdf-weight:${lineWeight}px;--pdf-spacing:${lineSpacing}px;--pdf-pattern:${pattern};`;
   w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(documentTitle)} — PDF</title><style>
   @page{size:A4;margin:18mm}*{box-sizing:border-box}body{margin:0;padding:12px;background:var(--pdf-bg);color:var(--pdf-ink);font-family:var(--pdf-font);font-size:var(--pdf-fs)}
@@ -126,7 +131,7 @@ function printPDFDocument(notes,documentTitle){
 .edit-text-wrap .node-content{position:relative;z-index:1;color:transparent!important;-webkit-text-fill-color:transparent;caret-color:var(--ink);background:transparent!important;resize:none;overflow:hidden}
 .edit-text-wrap .node-content::selection{background:#3987ed!important;-webkit-text-fill-color:white;color:white}
 .edit-text-wrap .node-content::-moz-selection{background:#3987ed;color:white}
-</style></head><body style="${themed}"><div class="pdf-actions"><button onclick="if(window.opener){window.close()}else{history.back()}">← Volver</button><label><input type="checkbox" id="plainPDF" onchange="document.body.classList.toggle('plain',this.checked)"> Sin estilo</label><button onclick="window.print()">Exportar / guardar PDF</button></div><article id="document">${notes.map((n,i)=>`<section class="pdf-note" style="${i?'break-before:page;page-break-before:always':''}"><h1>${esc(n.title)}</h1>${walk(n.nodes||[])}</section>`).join('')}</article></body></html>`);
+</style></head><body style="${themed}"><div class="pdf-actions"><button onclick="parent.closePDFPreview()">← Volver</button><label><input type="checkbox" id="plainPDF" onchange="document.body.classList.toggle('plain',this.checked)"> Sin estilo</label><button onclick="window.print()">Exportar / guardar PDF</button></div><article id="document">${notes.map((n,i)=>`<section class="pdf-note" style="${i?'break-before:page;page-break-before:always':''}"><h1>${esc(n.title)}</h1>${walk(n.nodes||[])}</section>`).join('')}</article></body></html>`);
   w.document.close();w.focus();
 }
 function languageUI(){modal(`<h3>Idioma / Language</h3><select id=langSelect><option value=es>Español</option><option value=en>English</option></select><button onclick="setLanguage($('langSelect').value)">Guardar</button>`);$('langSelect').value=db.language||'es'}function setLanguage(l){db.language=l;save();closeModal();render();translateUI();updateStudyGreeting()}function recoverBackup(){let copies=[];try{copies=JSON.parse(localStorage.getItem(BK)||'[]').filter(valid).sort((a,b)=>b.seq-a.seq)}catch{}modal(`<h3>Recuperar copia automática</h3><p>La recuperación reemplazará el estado actual. Exporta antes una copia manual.</p>${copies.map((x,i)=>`<div class=result>Versión ${x.seq} · ${new Date(x.updated).toLocaleString()} · ${x.notes.length} notas <button onclick="restoreCopy(${i})">Restaurar</button></div>`).join('')||'<p>No hay copias recuperables.</p>'}<button onclick="closeModal()">Cerrar</button>`);window._recoveryCopies=copies}

@@ -28,6 +28,8 @@ public class MainActivity extends Activity {
  private WebView web;
  private Storage storage;
  private ValueCallback<Uri[]> fileCallback;
+ private String pendingExternalFile=null;
+ private boolean pageReady=false;
  private static final int PICK_FILE=31;
  private static class Storage extends SQLiteOpenHelper {
   Storage(Activity activity){super(activity,"mishu.sqlite",null,1);}
@@ -51,7 +53,7 @@ public class MainActivity extends Activity {
    for(String k:new String[]{"collections","folders","notes","trash","templates"})if(o.optJSONArray(k)==null)return false;
    return true;}catch(Exception e){return false;}}
  }
- @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);web=new WebView(this);setContentView(web);
+ @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);pendingExternalFile=readMishuIntent(getIntent());web=new WebView(this);setContentView(web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);
   web.getSettings().setAllowContentAccess(true);web.getSettings().setMediaPlaybackRequiresUserGesture(false);web.addJavascriptInterface(new Bridge(),"MishuNative");
   web.setWebChromeClient(new WebChromeClient(){
@@ -61,11 +63,23 @@ public class MainActivity extends Activity {
    }
   });
   web.setWebViewClient(new WebViewClient(){
-   @Override public void onPageFinished(WebView v,String url){String saved=storage.restore();if(saved!=null)web.evaluateJavascript("window.mishuNativeRestore("+JSONObject.quote(saved)+")",null);}
+   @Override public void onPageFinished(WebView v,String url){String saved=storage.restore();if(saved!=null)web.evaluateJavascript("window.mishuNativeRestore("+JSONObject.quote(saved)+")",null);pageReady=true;deliverExternalFile();}
    @Override public boolean shouldOverrideUrlLoading(WebView view,android.webkit.WebResourceRequest request){Uri uri=request.getUrl();String scheme=uri.getScheme();if("file".equals(scheme)&&"android_asset".equals(uri.getHost()))return false;
     if("https".equals(scheme)||"http".equals(scheme)){try{startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){Log.e("Mishu","External link",e);}return true;}return true;}
   });web.loadUrl("file:///android_asset/index.html");
  }
+ private String readMishuIntent(Intent intent){
+  if(intent==null||!Intent.ACTION_VIEW.equals(intent.getAction()))return null;
+  Uri uri=intent.getData();if(uri==null)return null;
+  String filename=uri.getLastPathSegment();String type=intent.getType();
+  if((filename==null||!filename.toLowerCase(java.util.Locale.ROOT).endsWith(".mishu"))&&!("application/vnd.mishu+json".equals(type)))return null;
+  try(InputStream in=getContentResolver().openInputStream(uri);ByteArrayOutputStream out=new ByteArrayOutputStream()){
+   if(in==null)return null;byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1){out.write(b,0,n);if(out.size()>20*1024*1024)throw new IOException("File too large");}
+   return out.toString("UTF-8");
+  }catch(Exception e){Log.e("Mishu","Cannot open .mishu",e);return null;}
+ }
+ private void deliverExternalFile(){if(!pageReady||pendingExternalFile==null)return;String data=pendingExternalFile;pendingExternalFile=null;web.evaluateJavascript("window.mishuOpenExternal("+JSONObject.quote(data)+")",null);}
+ @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);pendingExternalFile=readMishuIntent(intent);deliverExternalFile();}
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==PICK_FILE&&fileCallback!=null){Uri[] result=WebChromeClient.FileChooserParams.parseResult(resultCode,data);fileCallback.onReceiveValue(result);fileCallback=null;}}
  class Bridge{@JavascriptInterface public void save(String json){storage.save(json);}}
  @Override public void onBackPressed(){web.evaluateJavascript("if(document.querySelector('dialog[open]'))closeModal();else back();",null);}

@@ -29,3 +29,8 @@ Esta versión **no cumple todavía íntegramente el prompt maestro**. No tiene e
 ## GitHub Actions: corrección de rutas
 
 El workflow `.github/workflows/android.yml` localiza automáticamente el proyecto Gradle en la raíz (`app/`) o dentro de `Mishu/app/`, evitando el error `working directory .../android: No such file or directory`. Se han especificado paquetes SDK disponibles, sin `tools` obsoleto. Para subir este ZIP a un repositorio nuevo, coloca **el contenido de la carpeta Mishu** en la raíz del repositorio (no una carpeta Mishu adicional). El APK debug se publica como artifact `Mishu-Debug-APK` cuando la compilación tiene éxito. No se ha ejecutado la compilación en GitHub Actions desde este entorno.
+
+## GitHub Actions (Android y Windows)
+Sube **el contenido completo** de este ZIP a la raíz del repositorio `CamPat/Mishu` (no subas solamente el ZIP ni solamente `android.yml`). La raíz debe contener `app/`, `windows/`, `build.gradle`, `settings.gradle` y `.github/workflows/android.yml` y `windows.yml`. También se detecta una carpeta envolvente `Mishu/` si se subió así. Si GitHub sigue diciendo que no existe `/android`, está ejecutando un workflow antiguo: sustituye `.github/workflows/android.yml` y confirma el commit en la rama `main`.
+
+En Actions ejecuta `Build Mishu Android APK` y `Build Mishu Windows EXE` por separado. Los artefactos se adjuntan solo si la compilación tiene éxito. No se ha probado la compilación en los runners de GitHub ni en dispositivos reales.

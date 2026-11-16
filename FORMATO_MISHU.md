@@ -1,11 +1,8 @@
-# Formato .mishu (contrato de compatibilidad)
+# Formato Mishu (.mishu) — versión 1
 
-Extensión oficial de intercambio: `.mishu`. Los archivos contienen JSON UTF-8.
-
-## Contrato v1
-- Elementos: `format: "mishu-item"`, `version: 1`, `type: "collection" | "folder" | "note"`, `collections`, `folders`, `notes`.
-- Backups: objeto con `schema: 1`, `seq`, `collections`, `folders`, `notes`, `trash`, `templates`.
-- Lectores futuros DEBEN aceptar estos formatos v1; nuevas versiones deben migrar sin modificar archivos antiguos.
-- `.mm` y `.json` legados se siguen aceptando en el selector de importación.
-- En Android, el intent ACTION_VIEW recibe el archivo mediante content URI y solicita confirmación antes de importar.
-- La asociación de Windows con `.mishu` requiere registro/instalador del sistema operativo; el ZIP no registra esa asociación automáticamente.
+- Única extensión admitida por los selectores de importación: `.mishu`.
+- Las notas, carpetas y colecciones usan el sobre `format: "mishu-item", version: 1`.
+- Las copias de seguridad `.mishu` contienen el estado validado de la biblioteca (`schema: 1`).
+- Las etiquetas se guardan como una lista opcional `tags: ["#anatomia", "#repaso"]` en cada nota.
+- Las versiones futuras deberán leer los archivos `.mishu` de versión 1; se podrán introducir versiones nuevas con migraciones explícitas.
+- La base de datos local no se borra ni se convierte al cambiar la extensión de intercambio.

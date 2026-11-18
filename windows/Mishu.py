@@ -61,7 +61,7 @@ if __name__ == '__main__':
         if len(sys.argv) < 2:
             return
         file = Path(sys.argv[1])
-        if file.suffix.lower() != '.mishu' or not file.is_file() or file.stat().st_size > 20*1024*1024:
+        if file.suffix.lower() != '.json' or not file.is_file() or file.stat().st_size > 20*1024*1024:
             return
         payload = file.read_text(encoding='utf-8')
         window.evaluate_js('window.mishuOpenExternal(' + json.dumps(payload, ensure_ascii=True) + ')')

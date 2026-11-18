@@ -1,1 +1,0 @@
-Mishu 2.7: selección azul nativa en el texto; barra contextual automática; eliminado botón Seleccionar / herramientas; rangos ocultos aparecen grisáceos en edición mediante espejo de texto. Sin compilación en dispositivos reales.

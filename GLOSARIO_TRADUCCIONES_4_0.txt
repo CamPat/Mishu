@@ -1,0 +1,316 @@
+Abrir / Open
+Abrir archivo / Open file
+Abrir externamente / Open externally
+Abrir imagen / Open image
+Abrir nota / Open note
+Abrir PDF / Open PDF
+Abrir video externamente si no se reproduce / Open video externally if playback fails
+Acciones / Actions
+Aceptar / OK
+Aceptar pegado / Apply paste
+Adelante / Forward
+Agregar / Add
+Amarillo / Yellow
+Ampliar imagen / Enlarge image
+Ampliar video / Enlarge video
+Anterior / Previous
+Aplicar / Apply
+Atrás / Back
+Audio / Audio
+Azul / Blue
+Añade tu primer tema. / Add your first topic.
+Añadir / Add
+Añadir a favoritos / Add to favorites
+Añadir etiqueta / Add tag
+Añadir subtema / Add subtopic
+Añadir tema / Add topic
+Aún no hay etiquetas. / No tags yet.
+Bajar / Move down
+Biblioteca / Library
+Biblioteca importada / Library imported
+Buscar / Search
+Buscar en biblioteca / Search library
+Buscar en la biblioteca / Search the library
+Buscar etiqueta / Search tag
+Buscar notas / Search notes
+Buscar por etiquetas / Search by tags
+Buscar relaciones / Find related notes
+Buscar texto / Search text
+Búsqueda global / Global search
+Cambiar nombre / Rename
+Cancelar / Cancel
+Carpeta / Folder
+Carpeta Mishu conectada / Mishu folder connected
+Carpeta Mishu no conectada / Mishu folder not connected
+Carpetas / Folders
+Cerrar / Close
+Coincidencia exacta / Exact match
+Coincidencias / Matches
+Colecciones / Collections
+Colección / Collection
+Colección de prueba creada con 3 notas. / Sample collection created with 3 notes.
+Color / Color
+Color de subtítulos / Subtitle color
+Color de títulos / Title color
+Componer PDF / Combine PDF
+Configuración / Settings
+Confirmar / Confirm
+Conservar colores, fuente y estilo / Keep colors, font and style
+Contenido / Content
+Contenido de estudio / Study content
+Continuar / Continue
+Controles / Controls
+Copias automáticas / Automatic backups
+Corazoncitos / Little hearts
+Corazones / Hearts
+Crear / Create
+Crear carpeta / Create folder
+Crear colección / Create collection
+Crear nota / Create note
+Crear subtema / Create subtopic
+Crear tema / Create topic
+Cursiva / Italic
+Dejar de ocultar / Unhide in study mode
+Deseleccionar todo / Deselect all
+Deshacer / Undo
+Detalles / Details
+Diagnóstico / Diagnostics
+Discontinua / Dashed
+Discontinuo / Dashed
+Donar / Donate
+Duplicar / Duplicate
+Duplicar nota / Duplicate note
+Editar / Edit
+Editar etiquetas / Edit tags
+Editor de estilo / Style editor
+Elegir fuente / Choose font
+Eliminar / Delete
+Eliminar carpeta / Delete folder
+Eliminar colección / Delete collection
+Eliminar definitivamente / Delete permanently
+Eliminar fondo / Remove background
+Eliminar nota / Delete note
+Eliminar vínculo / Remove link
+Enlace de video no válido. / Invalid video link.
+Enlazar multimedia / Link media
+Enviar a papelera / Move to trash
+Error al guardar en la carpeta Mishu: / Error saving to the Mishu folder:
+Error al importar: / Import error:
+Escribe al menos un tema / Enter at least one topic
+Escribe una etiqueta válida, por ejemplo #anatomia / Enter a valid tag, such as #anatomy
+Escribir etiqueta / Enter a tag
+Español / Spanish
+Esta acción es irreversible. / This action cannot be undone.
+Esta nota ya no existe / This note no longer exists
+Este archivo es una copia completa. ¿Reemplazar la biblioteca actual? / This file contains a full backup. Replace the current library?
+Este proveedor no admite una vista integrada conocida. / This provider does not support a known embedded viewer.
+Estilo / Style
+Estudiar / Study
+Etiquetas / Tags
+Etiquetas usadas / Existing tags
+Etiquetas utilizadas / Used tags
+Exportar / Export
+Exportar / guardar PDF / Export / save PDF
+Exportar archivo / Export file
+Exportar backup / Export backup
+Exportar carpeta / Export folder
+Exportar colección / Export collection
+Exportar nota / Export note
+Exportar PDF / Export PDF
+Favorito / Favorite
+Favoritos / Favorites
+Fecha / Date
+Filtrar por etiquetas / Filter by tags
+Fondo de entradas / Entry background
+Fondo de nota / Note background
+Fondo de notas / Note background
+Fondo general / App background
+Fuente / Font
+Fuente actual / Current font
+Fuentes disponibles / Available fonts
+Generar PDF / Generate PDF
+Gestionar / eliminar multimedia / Manage / remove media
+Grosor de líneas / Line thickness
+Guardar / Save
+Guardar cambios / Save changes
+Guardar como molde / Save as template
+Guardar PDF / Save PDF
+Herramientas de texto / Text tools
+Idioma / Language / Language
+Imagen / Image
+Importación completada: / Import complete:
+Importar / Import
+Importar archivo / Import file
+Importar backup / Import backup
+Importar colección / carpeta / nota / Import collection / folder / note
+Importar colección, carpeta o nota (.json) / Import collection, folder or note (.json)
+Importar copia de seguridad (.json) / Import backup (.json)
+Importar elemento / Import item
+Inicio / Home
+Intercalada / Alternating
+La recuperación reemplazará el estado actual. Exporta antes una copia manual. / Recovery will replace the current data. Export a manual backup first.
+La selección cambió. Selecciónala nuevamente. / The selection changed. Select the text again.
+Limpiar filtros / Clear filters
+Liso / Solid
+Líneas / Lines
+Menciones / Mentions
+Modo estudio / Study mode
+Moldes / Templates
+Morado / Purple
+Mostrar / Show
+Mover / Move
+Mover nota / Move note
+Naranja / Orange
+Negrita / Bold
+Ninguna / None
+No hay archivos vinculados. / No linked files.
+No hay copias recuperables. / No recoverable backups.
+No hay etiquetas / No tags
+No hay resultados / No results
+No se encontraron relaciones. / No related notes found.
+No se pudo abrir el archivo .json: / Could not open the .json file:
+No se pudo abrir la carpeta: / Could not open the folder:
+No se pudo generar la vista previa del PDF. / Could not generate the PDF preview.
+No se pudo guardar: / Could not save:
+No se pudo importar: / Could not import:
+No se pudo recuperar la biblioteca: / Could not recover the library:
+Nombre / Name
+Nota / Note
+Nota no encontrada / Note not found
+Nota vacía / Empty note
+Notas / Notes
+Nueva / New
+Nueva carpeta / New folder
+Nueva colección / New collection
+Nueva etiqueta / New tag
+Nueva nota / New note
+Nuevo / New
+Ocultar / Hide
+Ocultar en estudio / Hide in study mode
+Ocultar en modo estudio / Hide in study mode
+Opciones / Options
+Ordenar / Sort
+Otro enlace / Other link
+Palabra o frase / Word or phrase
+Palabras o título / Words or title
+Papelera / Trash
+Patrón / Pattern
+PDF compuesto / Combined PDF
+PDF individual / Single-note PDF
+Pegar texto / Paste text
+Pegar texto / Paste text / Paste text
+Personalizar / Customize
+Preparar PDF / Prepare PDF
+Puedes añadir varias etiquetas. Se comparten entre notas. / You can add multiple tags. Tags are shared across notes.
+Punteado / Dotted
+Puntos / Dots
+Quitar etiqueta / Remove tag
+Quitar favorito / Remove favorite
+Recuperar / Recover
+Recuperar copia automática / Recover automatic backup
+Rehacer / Redo
+Reiniciar / Restart
+Reintentar / Retry
+Relaciones / Related notes
+Renombrar / Rename
+Reproducir / Play
+Reproductor de video / Video player
+Resaltar / Highlight
+Restablecer / Reset
+Restaurar / Restore
+Restaurar copia / Restore backup
+Restaurar copia automática / Restore automatic backup
+Resultado / Result
+Resultados / Results
+Rosa / Pink
+Salir / Exit
+Salir del estudio / Exit study mode
+Secuencia de guardado / Save sequence
+Selecciona al menos una carpeta que contenga notas. / Select at least one folder containing notes.
+Selecciona nuevamente el texto. / Select the text again.
+Selecciona texto primero / Select text first
+Seleccionar / Select
+Seleccionar / herramientas / Select / tools
+Seleccionar carpeta Mishu / Select Mishu folder
+Seleccionar carpetas / Select folders
+Seleccionar colecciones / Select collections
+Seleccionar color / Choose color
+Seleccionar etiquetas / Select tags
+Seleccionar etiquetas existentes / Select existing tags
+Seleccionar todo / Select all
+Separación de líneas / Line spacing
+Siguiente / Next
+Sin archivos vinculados. / No linked files.
+Sin coincidencias / No matches
+Sin colecciones / No collections
+Sin contenido / No content
+Sin estilo / No styling
+Sin estilo (texto simple) / No styling (plain text)
+Sin etiquetas / No tags
+Sin multimedia / No media
+Sin notas / No notes
+Sin resultados / No results
+Sin seleccionar / None selected
+Sistema / System
+Subir / Move up
+Subrayado / Underline
+Subtema / Subtopic
+Tamaño / Font size
+Tema / Topic
+Tema no encontrado / Topic not found
+Texto / Text
+Texto predeterminado / Default text
+Tipo / Type
+Todas / All
+Todas las etiquetas / All tags
+Todas las notas / All notes
+Todavía no hay etiquetas. / No tags yet.
+Tu biblioteca está lista. Crea tu primera nota. / Your library is ready. Create your first note.
+Tu navegador no admite carpetas locales. Usa Chrome o Edge en una conexión HTTPS. / Your browser does not support local folder access. Use Chrome or Edge over HTTPS.
+Título / Title
+Título de la nota / Note title
+Título de tema / Topic title
+Vaciar papelera / Empty trash
+Verde / Green
+Versión / Version
+Video / Video
+Vincular archivo externo / Link external file
+Vincular externo / Link external file
+Vincular multimedia / Link media
+Vista ampliada / Expanded view
+Vista de edición / Edit view
+Vista de estudio / Study view
+Vista flotante · no sales de tu nota original / Floating preview · stay on your original note
+Vista previa / Preview
+Vista previa del PDF / PDF preview
+Volver / Back
+Volver a biblioteca / Back to library
+Volver a la nota / Back to note
+Vínculos multimedia / Media links
+¡A organizar! / Let's organize!
+¿Abrir la biblioteca guardada en esta carpeta? / Open the library saved in this folder?
+¿Crear una colección de ejemplo con notas de estudio? / Create a sample collection with study notes?
+¿Eliminar carpeta y enviar sus notas a papelera? / Delete this folder and move its notes to the trash?
+¿Eliminar colección y enviar sus notas a papelera? / Delete this collection and move its notes to the trash?
+¿Eliminar este tema y todos sus subtemas? / Delete this topic and all its subtopics?
+¿Eliminar solo este vínculo multimedia? El texto y el archivo externo se conservarán. / Remove only this media link? The text and external file will be kept.
+¿Enviar a papelera? / Move to trash?
+¿Reemplazar la biblioteca actual? / Replace the current library?
+¿Restaurar esta copia? / Restore this backup?
+Última escritura / Last saved
+← Anterior / ← Previous
+← Jerarquizar menos / ← Decrease nesting
+← Resultados / ← Results
+← Volver / ← Back
+↑ Subir / ↑ Move up
+→ Jerarquizar más / → Increase nesting
+↓ Bajar / ↓ Move down
+⛶ Ampliar video / ⛶ Expand video
+✎ Título / ✎ Title
+＋ Carpeta / ＋ Folder
+＋ Colección / ＋ Collection
+＋ Colección de prueba / ＋ Sample collection
+＋ Nota / ＋ Note
+＋ Subtema / ＋ Subtopic
+＋ Tema / ＋ Topic
+🔎 Buscar relaciones / 🔎 Find related notes

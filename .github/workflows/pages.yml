@@ -1,0 +1,51 @@
+name: Publish Mishu Web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'Mishu/web/**'
+      - '.github/workflows/pages.yml'
+      - 'Mishu/.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Find web app
+        id: site
+        shell: bash
+        run: |
+          if [ -f web/index.html ]; then
+            echo "path=web" >> "$GITHUB_OUTPUT"
+          elif [ -f Mishu/web/index.html ]; then
+            echo "path=Mishu/web" >> "$GITHUB_OUTPUT"
+          else
+            echo "ERROR: web/index.html not found" >&2
+            exit 1
+          fi
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.site.outputs.path }}
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

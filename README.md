@@ -110,3 +110,7 @@ Create OAuth clients in Google Cloud, enable Google Drive API and configure the 
 
 ### Google Drive (preparación 4.10)
 Consulta `CONFIGURAR_GOOGLE_DRIVE.md` antes de compilar. El inicio de sesión Android es experimental y requiere credenciales y validación en dispositivo. No se ha probado una sincronización real entre plataformas.
+
+
+## Mishu 4.12 — Barra de selección
+Se restauraron los botones Dividir y Mover a tema / mover a texto en la barra de selección para web, Android y Windows, con traducciones ya incluidas.

@@ -119,3 +119,7 @@ Se agregó Google Drive al selector de sincronización manual. Requiere un token
 - Configuración de cliente y esquema Android mediante propiedades Gradle.
 - Guía de configuración y plan de pruebas de sincronización cruzada.
 - **No validado con Google real; no es lanzamiento listo para producción.**
+
+
+## Mishu 4.12 — Barra de selección
+Se restauraron los botones Dividir y Mover a tema / mover a texto en la barra de selección para web, Android y Windows, con traducciones ya incluidas.

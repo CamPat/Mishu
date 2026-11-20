@@ -418,21 +418,16 @@ window.addEventListener('pywebviewready',async()=>{try{let state=await window.py
 
 // Device-to-device one-way transfer. The optional relay stores temporary snapshots,
 // not permanent cloud backups. The sending device MUST approve each request.
-const RELAY_KEY='mishu_relay_url_v1';
+const MISHU_RELAY_URL='__MISHU_SYNC_RELAY_URL__'; // Replaced at release build time, never entered by end users.
 let deviceSession=null,devicePoll=null;
 function syncT(en,es){return db?.language==='es'?es:en}
-function syncURL(){return (localStorage.getItem(RELAY_KEY)||'').replace(/\/+$/,'')}
+function syncURL(){return MISHU_RELAY_URL.startsWith('https://')?MISHU_RELAY_URL.replace(/\/+$/,''):''}
 function syncStatus(msg){const e=$('deviceSyncStatus');if(e)e.textContent=msg}
 function syncStop(){if(devicePoll){clearInterval(devicePoll);devicePoll=null}}
-function syncConfigure(){
- const value=$('relayUrl')?.value.trim().replace(/\/+$/,'');
- if(!value||!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(value))throw Error(syncT('Enter a valid HTTPS relay URL.','Introduce una URL HTTPS válida del servidor de conexión.'));
- localStorage.setItem(RELAY_KEY,value);return value;
-}
+function syncConfigure(){if(!syncURL())throw Error(syncT('Synchronization is not yet enabled in this release. Contact the app publisher.','La sincronización todavía no está habilitada en esta versión. Contacta a quien publicó la aplicación.'));return syncURL()}
 function deviceSyncUI(){
  syncStop();deviceSession=null;
  modal(`<h3>${syncT('Sync devices','Sincronizar dispositivos')}</h3><p>${syncT('Transfer your library directly between devices using a temporary four-digit code. No Google, Dropbox, or GitHub account required. The sender must stay open and approve the transfer.','Transfiere tu biblioteca entre dispositivos con un código temporal de cuatro dígitos. No necesitas cuentas de Google, Dropbox ni GitHub. El dispositivo emisor debe permanecer abierto y aprobar la transferencia.')}</p>
- <label>${syncT('Connection server (one-time setup)','Servidor de conexión (configuración inicial)')}</label><input id="relayUrl" style="width:100%" value="${esc(syncURL())}" placeholder="https://mishu-sync.example.workers.dev" autocomplete="off"><p class="muted">${syncT('A small relay server is required for devices on different networks. Deploy the included Cloudflare Worker once, then use its URL on all devices. Data is kept temporarily, not as a cloud backup.','Para conectar dispositivos en redes distintas se necesita un pequeño servidor intermediario. Publica una vez el Cloudflare Worker incluido y usa su URL en todos los dispositivos. Los datos se guardan temporalmente, no como respaldo en la nube.')}</p>
  <div class="toolbar" style="display:flex;flex-direction:column;align-items:stretch;gap:8px"><button onclick="syncStartSender()">${syncT('Sync another device from this one','Sincronizar otro dispositivo a partir de este')}</button><button onclick="syncReceiverForm()">${syncT('Sync this device from another','Sincronizar este dispositivo a partir de otro')}</button><button onclick="syncStop();closeModal()">${syncT('Cancel','Cancelar')}</button></div><p id="deviceSyncStatus" role="status"></p>`);
 }
 async function syncFetch(path,body){

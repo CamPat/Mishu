@@ -1,28 +1,18 @@
-# Mishu 4.15 — Device-to-device pairing (English / Español)
+# Mishu 4.16 — Publisher-only synchronization setup / Configuración exclusiva del desarrollador
 
-## Important / Importante
-A four-digit code **cannot transfer data across the internet on its own**. A temporary relay service is necessary for web, Android, and Windows on different networks. This implementation uses a Cloudflare Worker + KV as a **temporary connection server**, NOT Google Drive/Dropbox/GitHub storage. You must deploy it once and enter its HTTPS URL in Mishu on both devices. There is no OAuth client ID or user account login inside Mishu.
+**End users do not configure any URL, account, OAuth client, or relay.** The sync dialog contains only the two transfer choices.
 
-Un código de cuatro dígitos **no puede transmitir información por Internet por sí solo**. Se necesita un servidor temporal. El proyecto incluye un Cloudflare Worker con KV que actúa como intermediario, **no como almacenamiento permanente**. Debes publicarlo una vez y pegar su URL HTTPS en Mishu en ambos dispositivos. No necesitas configurar OAuth de Google.
+**Important:** No Cloudflare Worker has been deployed by this package. A working relay URL cannot be fabricated. Until the publisher completes the steps below, the app displays a localized *sync not enabled* error. Do not claim synchronization is operational before testing.
 
-## Deployment / Publicación
-1. Create a Cloudflare account and install Node.js locally.
-2. Open `sync-relay/` and run `npx wrangler login`.
-3. Run `npx wrangler kv namespace create PAIRS` and copy the namespace ID into `sync-relay/wrangler.toml`.
-4. Run `npx wrangler deploy` inside `sync-relay/`.
-5. Copy the HTTPS `*.workers.dev` URL into the Mishu synchronization dialog on **both** devices.
-6. Open Mishu on device A, select **Sync another device from this one**, and note the four-digit code.
-7. On device B, select **Sync this device from another**, enter the code.
-8. Approve the request on A; inspect the before/after counts on B; confirm replacement on B.
+## One-time publisher setup
 
-## Security and limitations / Seguridad y limitaciones
-- The code expires after **10 minutes**, and the sender must approve the request.
-- The sender must remain online and keep the synchronization dialog open.
-- This is **one-way full library replacement**, not a merge, and is NOT automatic sync.
-- A local recovery backup is created on the receiver before replacement. Export a manual JSON backup as well.
-- The relay **temporarily holds the library in readable JSON**. Do not deploy it under a shared/untrusted account for sensitive notes. Cloudflare KV can retain data beyond TTL in internal infrastructure; this is not end-to-end encrypted.
-- Four-digit codes have only 10,000 combinations. Sender approval mitigates but does not eliminate abuse. Do not approve unexpected requests. For stronger security, a longer pairing code and end-to-end encryption should be added before production use.
-- KV has eventual consistency and does not provide atomic code reservation. Simultaneous requests and code collisions are possible under heavy use. This is a prototype and requires live security and cross-platform testing.
-- Worker request size is limited to ~3.5MB of JSON. Very large libraries will need a chunked transfer design.
-- The application no longer asks for Google OAuth credentials. **Deploying a relay service is still required.**
-- Do not treat this prototype as a verified production-ready synchronization system.
+1. Create a Cloudflare account. In Cloudflare, create a Workers KV namespace named `PAIRS` (or run `npx wrangler kv namespace create PAIRS`).
+2. In the GitHub repository Settings → Secrets and variables → Actions, add secrets `CLOUDFLARE_API_TOKEN` (Workers/KV deployment permissions) and `CLOUDFLARE_ACCOUNT_ID`; add variable `MISHU_KV_NAMESPACE_ID` with the KV namespace ID.
+3. Run the **Deploy Mishu Sync Relay** workflow. It deploys `sync-relay/worker.js` and prints the actual HTTPS Worker URL in the deployment logs.
+4. Add GitHub Actions repository variable `MISHU_SYNC_URL` set to that exact HTTPS Worker URL (e.g. `https://mishu-device-sync.<your-subdomain>.workers.dev`).
+5. Re-run **Publish Mishu Web**, **Build Mishu Android APK**, and **Build Mishu Windows EXE**. Each build automatically embeds the same endpoint. No user setup is needed.
+6. Test on two devices, including sender approval, receiver preview, confirmation, recovery and error cases. Keep the sender window open.
+
+## Safety / Seguridad
+
+This remains a **prototype**, not verified production sync. The relay temporarily stores readable library JSON; there is **no end-to-end encryption**. Four-digit codes are guessable; approval is mandatory but not a substitute for cryptographic security. Do not transfer sensitive data. Worker uses Cloudflare KV eventual consistency; transfers can fail or race. The receiver replaces the full library, not merges it. Export a separate JSON backup first.

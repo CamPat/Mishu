@@ -127,3 +127,7 @@ Se restauraron los botones Dividir y Mover a tema / mover a texto en la barra de
 
 ## Mishu 4.15 — Device-to-device sync
 Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new libraries; existing language settings remain unchanged. Four-digit pairing requires deploying the included temporary relay server (see SYNC_SETUP.md). Sender approval, receiving-side comparison, full replacement confirmation, and local recovery backup are included. Not tested with live cross-device deployment.
+
+
+### 4.16 Sync configuration
+Users no longer enter a server URL. The publisher must deploy the Cloudflare relay and set the GitHub Actions `MISHU_SYNC_URL` variable. See `SYNC_SETUP.md`.

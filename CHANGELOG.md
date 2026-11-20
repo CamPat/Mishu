@@ -136,3 +136,10 @@ Se restauraron los botones Dividir y Mover a tema / mover a texto en la barra de
 
 ## Mishu 4.15 — Device-to-device sync
 Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new libraries; existing language settings remain unchanged. Four-digit pairing requires deploying the included temporary relay server (see SYNC_SETUP.md). Sender approval, receiving-side comparison, full replacement confirmation, and local recovery backup are included. Not tested with live cross-device deployment.
+
+
+## 4.16 — Managed pairing endpoint
+- Removed relay URL field from the end-user interface.
+- CI embeds one publisher-managed relay URL in web, Android and Windows builds.
+- Added publisher deployment workflow and bilingual setup guide.
+- Pairing remains inactive until a real Cloudflare Worker URL is configured and verified.

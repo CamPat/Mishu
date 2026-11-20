@@ -57,3 +57,10 @@ Mishu 2.7: selección azul nativa en el texto; barra contextual automática; eli
 ## Video Fix
 
 Mishu 2.6: reproductor integrado HTML5 para MP4/WebM/Ogg; vista previa embebida de YouTube, Vimeo y Google Drive; ampliación en modal y enlace alternativo externo. Algunos proveedores restringen la reproducción embebida. No se ha probado en dispositivo real.\n
+
+## Mishu 4.7 — Sincronización manual de nube
+Botón ☁ y menú de sincronización, GitHub (repositorio privado) y Dropbox mediante token OAuth. Carpetas como partidas independientes. Comparación de fecha `updated`, confirmación antes de sobrescribir, copia de recuperación local y mensajes español/inglés. El token no se guarda. Requiere conexión a Internet, credenciales válidas y acceso CORS del proveedor. No combina cambios simultáneos; relojes incorrectos pueden producir decisiones erróneas.
+
+
+## Mishu 4.8 — Google Drive
+Se agregó Google Drive al selector de sincronización manual. Requiere un token OAuth de acceso temporal con permisos Drive; no incluye inicio de sesión de Google integrado en Windows o Android. La API crea `Mishu/<carpeta>/mishu-backup.json` en Mi unidad. La autenticación, los permisos de la API y el acceso CORS deben configurarse y comprobarse en cada plataforma. No se almacenan tokens en las copias. La sincronización no fusiona cambios concurrentes.

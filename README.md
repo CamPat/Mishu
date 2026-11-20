@@ -1,4 +1,4 @@
-# Mishu 4.4 — Android, Windows y Web
+# Mishu 4.5 — Android, Windows y Web
 
 **Documentación:** `GUIA_DESARROLLO.md` · **Historial único:** `CHANGELOG.md`.
 
@@ -92,3 +92,21 @@ La vista PDF se abre con la configuración visual actual. Dentro de la vista, «
 - Al pulsar Siguiente en la última nota, se crea una nota nueva inmediatamente después de ella.
 - Botones ↑/↓ para reordenar colecciones, carpetas y notas dentro de su grupo.
 - El orden se conserva en el estado local y las exportaciones JSON.
+
+
+## Mishu 4.6 — División y movimiento de selecciones
+La barra de selección permite dividir en subtema o tema paralelo, elegir título/contenido y mover fragmentos entre ambos campos. Incluye traducciones al inglés.
+
+
+## Mishu 4.7 — Sincronización manual de nube
+Botón ☁ y menú de sincronización, GitHub (repositorio privado) y Dropbox mediante token OAuth. Carpetas como partidas independientes. Comparación de fecha `updated`, confirmación antes de sobrescribir, copia de recuperación local y mensajes español/inglés. El token no se guarda. Requiere conexión a Internet, credenciales válidas y acceso CORS del proveedor. No combina cambios simultáneos; relojes incorrectos pueden producir decisiones erróneas.
+
+
+## Mishu 4.8 — Google Drive
+Se agregó Google Drive al selector de sincronización manual. Requiere un token OAuth de acceso temporal con permisos Drive; no incluye inicio de sesión de Google integrado en Windows o Android. La API crea `Mishu/<carpeta>/mishu-backup.json` en Mi unidad. La autenticación, los permisos de la API y el acceso CORS deben configurarse y comprobarse en cada plataforma. No se almacenan tokens en las copias. La sincronización no fusiona cambios concurrentes.
+
+## Google sign-in (4.9)
+Create OAuth clients in Google Cloud, enable Google Drive API and configure the consent screen. For GitHub Pages register your exact origin (e.g. https://campat.github.io) as an authorized JavaScript origin for a Web application OAuth client. For Windows use a separate Desktop OAuth client ID and the system browser. Google login on Android requires a native SDK implementation and is not available in this build.
+
+### Google Drive (preparación 4.10)
+Consulta `CONFIGURAR_GOOGLE_DRIVE.md` antes de compilar. El inicio de sesión Android es experimental y requiere credenciales y validación en dispositivo. No se ha probado una sincronización real entre plataformas.

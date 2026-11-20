@@ -1,3 +1,10 @@
+## 4.5 — Jerarquía y pegado
+- Jerarquizar más: eleva un tema un nivel (izquierda).
+- Jerarquizar menos: anida un tema bajo el anterior (derecha).
+- Los subtemas se desplazan junto con su tema padre en ambas operaciones.
+- Pegar texto: los temas raíz se insertan al mismo nivel, después del seleccionado; los prefijos > conservan subjerarquías.
+- Cambios compartidos por web, Android y Windows.
+
 # Historial de cambios — Mishu
 
 Las notas de actualización anteriores se han reunido aquí. Este historial describe cambios de código, no pruebas en dispositivos reales.
@@ -88,3 +95,27 @@ Mishu 4.2: Corrige la traducción del botón # Etiquetas / # Tags en la vista de
 - Consolidación de notas de versiones en un único `CHANGELOG.md`.
 - Unificación de la documentación en `GUIA_DESARROLLO.md`.
 - HTML compartido entre Android, Windows y web, con las correcciones de la versión 4.3.
+
+
+## Mishu 4.6 — División y movimiento de selecciones
+La barra de selección permite dividir en subtema o tema paralelo, elegir título/contenido y mover fragmentos entre ambos campos. Incluye traducciones al inglés.
+
+
+## Mishu 4.7 — Sincronización manual de nube
+Botón ☁ y menú de sincronización, GitHub (repositorio privado) y Dropbox mediante token OAuth. Carpetas como partidas independientes. Comparación de fecha `updated`, confirmación antes de sobrescribir, copia de recuperación local y mensajes español/inglés. El token no se guarda. Requiere conexión a Internet, credenciales válidas y acceso CORS del proveedor. No combina cambios simultáneos; relojes incorrectos pueden producir decisiones erróneas.
+
+
+## Mishu 4.8 — Google Drive
+Se agregó Google Drive al selector de sincronización manual. Requiere un token OAuth de acceso temporal con permisos Drive; no incluye inicio de sesión de Google integrado en Windows o Android. La API crea `Mishu/<carpeta>/mishu-backup.json` en Mi unidad. La autenticación, los permisos de la API y el acceso CORS deben configurarse y comprobarse en cada plataforma. No se almacenan tokens en las copias. La sincronización no fusiona cambios concurrentes.
+
+## 4.9 — Google OAuth
+- Web: Google Identity Services popup, configurable web client ID.
+- Windows: system browser with OAuth authorization code + PKCE + localhost callback, configurable Desktop client ID.
+- Android: Google login button is not yet connected to a native SDK; manual token fallback is retained only in prior releases. Do not claim Android sign-in works.
+
+## 4.10 — Preparación de autenticación Android (experimental)
+- Flujo AppAuth OAuth para Android (autorización mediante navegador externo, PKCE y retorno a la app).
+- Integración del token obtenido con la interfaz bilingüe de sincronización.
+- Configuración de cliente y esquema Android mediante propiedades Gradle.
+- Guía de configuración y plan de pruebas de sincronización cruzada.
+- **No validado con Google real; no es lanzamiento listo para producción.**

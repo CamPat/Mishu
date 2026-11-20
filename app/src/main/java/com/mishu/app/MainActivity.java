@@ -1,6 +1,15 @@
 package com.mishu.app;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import net.openid.appauth.AuthorizationService;
+import net.openid.appauth.AuthorizationRequest;
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationException;
+import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.ResponseTypeValues;
+import net.openid.appauth.TokenResponse;
+import android.util.Log;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -53,7 +62,32 @@ public class MainActivity extends Activity {
    for(String k:new String[]{"collections","folders","notes","trash","templates"})if(o.optJSONArray(k)==null)return false;
    return true;}catch(Exception e){return false;}}
  }
- @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);pendingExternalFile=readMishuIntent(getIntent());web=new WebView(this);setContentView(web);
+ private AuthorizationService authService;
+ private void googleLogin(){
+  String clientId=BuildConfig.GOOGLE_OAUTH_CLIENT_ID;
+  if(clientId.isEmpty()){web.evaluateJavascript("window.mishuGoogleError('Google OAuth Android client ID not configured')",null);return;}
+  AuthorizationServiceConfiguration service=new AuthorizationServiceConfiguration(
+    Uri.parse("https://accounts.google.com/o/oauth2/v2/auth"),Uri.parse("https://oauth2.googleapis.com/token"));
+  AuthorizationRequest req=new AuthorizationRequest.Builder(service,clientId,ResponseTypeValues.CODE,
+    Uri.parse(BuildConfig.GOOGLE_REDIRECT_URI))
+    .setScope("https://www.googleapis.com/auth/drive.file")
+    .build();
+  Intent callback=new Intent(this,MainActivity.class).setAction("com.mishu.app.GOOGLE_OAUTH");
+  callback.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+  PendingIntent pending=PendingIntent.getActivity(this,31415,callback,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_MUTABLE);
+  authService.performAuthorizationRequest(req,pending);
+ }
+ private void completeGoogleLogin(Intent intent){
+  AuthorizationResponse response=AuthorizationResponse.fromIntent(intent);
+  AuthorizationException exception=AuthorizationException.fromIntent(intent);
+  if(response==null){String error=exception==null?"Google sign-in cancelled":exception.getMessage();web.evaluateJavascript("window.mishuGoogleError("+JSONObject.quote(error)+")",null);return;}
+  authService.performTokenRequest(response.createTokenExchangeRequest(),(tokenResponse,tokenException)->runOnUiThread(()->{
+   if(tokenResponse!=null&&tokenResponse.accessToken!=null){
+    web.evaluateJavascript("window.mishuGoogleToken("+JSONObject.quote(tokenResponse.accessToken)+")",null);
+   }else{String error=tokenException==null?"Token exchange failed":tokenException.getMessage();web.evaluateJavascript("window.mishuGoogleError("+JSONObject.quote(error)+")",null);}
+  }));
+ }
+ @Override public void onCreate(Bundle state){super.onCreate(state);getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);storage=new Storage(this);authService=new AuthorizationService(this);pendingExternalFile=readMishuIntent(getIntent());web=new WebView(this);setContentView(web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);
   web.getSettings().setAllowContentAccess(true);web.getSettings().setMediaPlaybackRequiresUserGesture(false);web.addJavascriptInterface(new Bridge(),"MishuNative");
   web.setWebChromeClient(new WebChromeClient(){
@@ -63,7 +97,7 @@ public class MainActivity extends Activity {
    }
   });
   web.setWebViewClient(new WebViewClient(){
-   @Override public void onPageFinished(WebView v,String url){String saved=storage.restore();if(saved!=null)web.evaluateJavascript("window.mishuNativeRestore("+JSONObject.quote(saved)+")",null);pageReady=true;deliverExternalFile();}
+   @Override public void onPageFinished(WebView v,String url){String saved=storage.restore();if(saved!=null)web.evaluateJavascript("window.mishuNativeRestore("+JSONObject.quote(saved)+")",null);pageReady=true;deliverExternalFile();if("com.mishu.app.GOOGLE_OAUTH".equals(getIntent().getAction()))completeGoogleLogin(getIntent());}
    @Override public boolean shouldOverrideUrlLoading(WebView view,android.webkit.WebResourceRequest request){Uri uri=request.getUrl();String scheme=uri.getScheme();if("file".equals(scheme)&&"android_asset".equals(uri.getHost()))return false;
     if("https".equals(scheme)||"http".equals(scheme)){try{startActivity(new Intent(Intent.ACTION_VIEW,uri));}catch(Exception e){Log.e("Mishu","External link",e);}return true;}return true;}
   });web.loadUrl("file:///android_asset/index.html");
@@ -79,9 +113,9 @@ public class MainActivity extends Activity {
   }catch(Exception e){Log.e("Mishu","Cannot open .mishu",e);return null;}
  }
  private void deliverExternalFile(){if(!pageReady||pendingExternalFile==null)return;String data=pendingExternalFile;pendingExternalFile=null;web.evaluateJavascript("window.mishuOpenExternal("+JSONObject.quote(data)+")",null);}
- @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);pendingExternalFile=readMishuIntent(intent);deliverExternalFile();}
+ @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if("com.mishu.app.GOOGLE_OAUTH".equals(intent.getAction())){completeGoogleLogin(intent);return;}pendingExternalFile=readMishuIntent(intent);deliverExternalFile();}
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==PICK_FILE&&fileCallback!=null){Uri[] result=WebChromeClient.FileChooserParams.parseResult(resultCode,data);fileCallback.onReceiveValue(result);fileCallback=null;}}
- class Bridge{@JavascriptInterface public void save(String json){storage.save(json);}}
+ class Bridge{@JavascriptInterface public void save(String json){storage.save(json);}@JavascriptInterface public void googleLogin(){runOnUiThread(()->MainActivity.this.googleLogin());}}
  @Override public void onBackPressed(){web.evaluateJavascript("if(document.querySelector('dialog[open]'))closeModal();else back();",null);}
- @Override protected void onDestroy(){if(web!=null)web.destroy();storage.close();super.onDestroy();}
+ @Override protected void onDestroy(){if(web!=null)web.destroy();if(authService!=null)authService.dispose();storage.close();super.onDestroy();}
 }

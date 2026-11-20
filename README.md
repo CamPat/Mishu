@@ -1,3 +1,8 @@
+## Mishu 4.13 — Menús de selección
+- Dividir sustituye la barra principal por las opciones, sin superposición.
+- Mover muestra únicamente la acción opuesta al campo seleccionado y la ejecuta directamente.
+- Interfaz bilingüe.
+
 # Mishu 4.5 — Android, Windows y Web
 
 **Documentación:** `GUIA_DESARROLLO.md` · **Historial único:** `CHANGELOG.md`.

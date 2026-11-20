@@ -1,3 +1,8 @@
+## Mishu 4.13 — Menús de selección
+- Dividir sustituye la barra principal por las opciones, sin superposición.
+- Mover muestra únicamente la acción opuesta al campo seleccionado y la ejecuta directamente.
+- Interfaz bilingüe.
+
 ## 4.5 — Jerarquía y pegado
 - Jerarquizar más: eleva un tema un nivel (izquierda).
 - Jerarquizar menos: anida un tema bajo el anterior (derecha).

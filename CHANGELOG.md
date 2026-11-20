@@ -1,3 +1,7 @@
+## Mishu 4.14 — Menú Dividir estable
+
+La acción Dividir abre un diálogo independiente de la barra de selección. Se conserva el texto seleccionado incluso con guardado pendiente. Traducciones español/inglés.
+
 ## Mishu 4.13 — Menús de selección
 - Dividir sustituye la barra principal por las opciones, sin superposición.
 - Mover muestra únicamente la acción opuesta al campo seleccionado y la ejecuta directamente.

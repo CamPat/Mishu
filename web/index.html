@@ -42,7 +42,7 @@ let current=null,folder=null,collection=null,history=[],future=[],study=false,se
 function mutate(f){if(current)flushEdits();undoStack.push(JSON.stringify(db));if(undoStack.length>35)undoStack.shift();redoStack=[];f();save();render()}
 function undoEdit(){if(study)return;if(!undoStack.length)return;flushEdits();redoStack.push(JSON.stringify(db));db=JSON.parse(undoStack.pop());save();render()}
 function redoEdit(){if(study)return;if(!redoStack.length)return;flushEdits();undoStack.push(JSON.stringify(db));db=JSON.parse(redoStack.pop());save();render()}
-function goto(id,record=true){if(current)flushEdits();if(id&&!findNote(id))return alert('Esta nota ya no existe');if(record){history.push(current);future=[]}current=id;hidePop();render();window.scrollTo(0,0)}function back(){if(current)flushEdits();if(!history.length)return;future.push(current);current=history.pop();render()}function forward(){if(current)flushEdits();if(!future.length)return;history.push(current);current=future.pop();render()}function modal(html){$('modal').innerHTML=html;$('modal').showModal()}function closeModal(){$('modal').close()}function ask(title,value,cb){modal(`<h3>${esc(title)}</h3><form method="dialog" id="askForm"><input id="askValue" type="text" value="${esc(value)}" required style="width:100%"><div class="toolbar"><button type="button" onclick="closeModal()">Cancelar</button><button class="primary">Guardar</button></div></form>`);$('askForm').onsubmit=e=>{e.preventDefault();const v=$('askValue').value.trim();if(v){closeModal();cb(v)}}}function hidePop(){$('popover').classList.add('hidden')}function positionPopover(anchor){const p=$('popover');if(!anchor)return;const r=anchor.getBoundingClientRect();p.style.transform='none';p.style.width='min(290px, calc(100vw - 16px))';p.style.maxHeight='min(70vh, 480px)';p.style.overflowY='auto';const w=p.getBoundingClientRect().width;let x=r.left;if(x+w>innerWidth-8)x=Math.max(8,innerWidth-w-8);if(x<8)x=8;let y=r.bottom+5;const h=p.getBoundingClientRect().height;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-5);if(y<8)y=8;p.style.left=x+'px';p.style.top=y+'px'}function pop(html,anchor){$('popover').removeAttribute('style');$('popover').innerHTML=html;$('popover').classList.remove('hidden');positionPopover(anchor||document.activeElement)};document.addEventListener('pointerdown',e=>{if(!e.target.closest('#popover,#optBtn,#navBtn'))hidePop();if(!e.target.closest('#selectionBar,.node-content,.node-title-input,.study-text'))hideSelectionBar()});$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
+function goto(id,record=true){if(current)flushEdits();if(id&&!findNote(id))return alert('Esta nota ya no existe');if(record){history.push(current);future=[]}current=id;hidePop();render();window.scrollTo(0,0)}function back(){if(current)flushEdits();if(!history.length)return;future.push(current);current=history.pop();render()}function forward(){if(current)flushEdits();if(!future.length)return;history.push(current);current=future.pop();render()}function modal(html){const d=$('modal');d.innerHTML=html;if(!d.open)d.showModal()}function closeModal(){$('modal').close()}function ask(title,value,cb){modal(`<h3>${esc(title)}</h3><form method="dialog" id="askForm"><input id="askValue" type="text" value="${esc(value)}" required style="width:100%"><div class="toolbar"><button type="button" onclick="closeModal()">Cancelar</button><button class="primary">Guardar</button></div></form>`);$('askForm').onsubmit=e=>{e.preventDefault();const v=$('askValue').value.trim();if(v){closeModal();cb(v)}}}function hidePop(){$('popover').classList.add('hidden')}function positionPopover(anchor){const p=$('popover');if(!anchor)return;const r=anchor.getBoundingClientRect();p.style.transform='none';p.style.width='min(290px, calc(100vw - 16px))';p.style.maxHeight='min(70vh, 480px)';p.style.overflowY='auto';const w=p.getBoundingClientRect().width;let x=r.left;if(x+w>innerWidth-8)x=Math.max(8,innerWidth-w-8);if(x<8)x=8;let y=r.bottom+5;const h=p.getBoundingClientRect().height;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-5);if(y<8)y=8;p.style.left=x+'px';p.style.top=y+'px'}function pop(html,anchor){$('popover').removeAttribute('style');$('popover').innerHTML=html;$('popover').classList.remove('hidden');positionPopover(anchor||document.activeElement)};document.addEventListener('pointerdown',e=>{if(!e.target.closest('#popover,#optBtn,#navBtn'))hidePop();if(!e.target.closest('#selectionBar,.node-content,.node-title-input,.study-text'))hideSelectionBar()});$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
 function folderNotes(folderId){return db.notes.filter(n=>n.folderId===folderId)}
 function noteSequence(id,direction){if(current)flushEdits();const n=findNote(id);if(!n)return;const ordered=folderNotes(n.folderId),idx=ordered.findIndex(x=>x.id===id),target=ordered[idx+direction];if(target){goto(target.id);return}if(direction<0)return;const freshNote={id:uid(),folderId:n.folderId,title:'Nueva nota',nodes:[],created:now(),updated:now()};mutate(()=>{const pos=db.notes.findIndex(x=>x.id===n.id);db.notes.splice(pos+1,0,freshNote)});goto(freshNote.id)}
 function moveLibraryItem(kind,id,direction){const list=kind==='collection'?db.collections:kind==='folder'?db.folders:db.notes;const obj=list.find(x=>x.id===id);if(!obj)return;const group=kind==='collection'?list:kind==='folder'?list.filter(x=>x.collectionId===obj.collectionId):list.filter(x=>x.folderId===obj.folderId);const idx=group.findIndex(x=>x.id===id),other=group[idx+direction];if(!other)return;mutate(()=>{const a=list.indexOf(obj),b=list.indexOf(other);[list[a],list[b]]=[list[b],list[a]]})}
@@ -78,7 +78,9 @@ function selectedSnapshot(){
  if(study||!selectionNode||!selectionText)return null;
  const n=locate(selectionNode);if(!n)return null;
  const field=selectionField==='title'?'title':'content';
- const text=String(n[field]||'');
+ // Read the live textarea: autosave can still be pending when the user selects text.
+ const live=[...document.querySelectorAll(field==='title'?'.node-title-input':'.node-content')].find(el=>el.closest('[data-node]')?.dataset.node===selectionNode);
+ const text=live?live.value:String(n[field]||'');
  if(text.slice(selectionStart,selectionEnd)!==selectionText)return null;
  return {id:selectionNode,field,start:selectionStart,end:selectionEnd,text,selected:selectionText};
 }
@@ -100,21 +102,29 @@ function selectionMenu(html){
  bar.style.visibility='visible';translateUI();
 }
 function showSplitChoices(){
- const snap=selectedSnapshot();if(!snap)return selectionError();window._splitPending=snap;
- selectionMenu(`<button onclick="chooseSplit('child')">Crear subtema con lo seleccionado</button><button onclick="chooseSplit('sibling')">Crear nuevo tema a partir de lo seleccionado</button>`);
+ const snap=selectedSnapshot();if(!snap)return selectionError();
+ window._splitPending=snap;window._splitKind=null;
+ hideSelectionBar();hidePop();
+ modal(`<h3>${db.language==='en'?'Split selected text':'Dividir texto seleccionado'}</h3><p>${db.language==='en'?'Choose how to split the selection.':'Elige cómo dividir la selección.'}</p><div class="toolbar" style="display:flex;flex-direction:column;align-items:stretch;gap:9px"><button type="button" onclick="chooseSplit('child')">${db.language==='en'?'Create subtopic from selection':'Crear subtema con lo seleccionado'}</button><button type="button" onclick="chooseSplit('sibling')">${db.language==='en'?'Create new topic from selection onward':'Crear nuevo tema a partir de lo seleccionado'}</button><button type="button" onclick="closeModal()">${db.language==='en'?'Cancel':'Cancelar'}</button></div>`);
 }
 function chooseSplit(kind){
  if(!window._splitPending)return;
  window._splitKind=kind;
- selectionMenu(`<button onclick="applySplit('title')">Poner en el tema</button><button onclick="applySplit('content')">Poner en el texto</button><button onclick="showSplitChoices()">Atrás</button>`);
+ modal(`<h3>${db.language==='en'?'Where should the extracted text go?':'¿Dónde colocar el texto extraído?'}</h3><div class="toolbar" style="display:flex;flex-direction:column;align-items:stretch;gap:9px"><button type="button" onclick="applySplit('title')">${db.language==='en'?'Place in title':'Poner en el tema'}</button><button type="button" onclick="applySplit('content')">${db.language==='en'?'Place in text':'Poner en el texto'}</button><button type="button" onclick="showSplitChoicesAgain()">${db.language==='en'?'Back':'Volver'}</button></div>`);
+}
+function showSplitChoicesAgain(){
+ const snap=window._splitPending;
+ if(!snap)return closeModal();
+ const lang=db.language==='en';
+ modal(`<h3>${lang?'Split selected text':'Dividir texto seleccionado'}</h3><div class="toolbar" style="display:flex;flex-direction:column;align-items:stretch;gap:9px"><button type="button" onclick="chooseSplit('child')">${lang?'Create subtopic from selection':'Crear subtema con lo seleccionado'}</button><button type="button" onclick="chooseSplit('sibling')">${lang?'Create new topic from selection onward':'Crear nuevo tema a partir de lo seleccionado'}</button><button type="button" onclick="closeModal()">${lang?'Cancel':'Cancelar'}</button></div>`);
 }
 function applySplit(destination){
  const snap=window._splitPending,kind=window._splitKind;
  if(!snap||!['child','sibling'].includes(kind)||!['title','content'].includes(destination))return;
- const n=locate(snap.id);if(!n||String(n[snap.field]||'')!==snap.text){hidePop();return selectionError();}
+ const n=locate(snap.id);if(!n){closeModal();return selectionError();} if(String(n[snap.field]||'')!==snap.text){flushEdits();if(String(n[snap.field]||'')!==snap.text){closeModal();return selectionError();}}
  const extracted=kind==='child'?snap.selected:snap.text.slice(snap.start);
  if(!extracted.trim()){hidePop();return;}
- hidePop();restoreSelectionBarButtons();hideSelectionBar();
+ closeModal();hidePop();restoreSelectionBarButtons();hideSelectionBar();
  mutate(()=>{
    const source=locate(snap.id);if(!source)return;
    const before=snap.text.slice(0,snap.start),after=snap.text.slice(snap.end);
@@ -136,7 +146,7 @@ function showMoveChoices(){
 function applyMoveSelection(target){
  const snap=window._movePending;
  if(!snap||!['title','content'].includes(target)||target===snap.field)return;
- const n=locate(snap.id);if(!n||String(n[snap.field]||'')!==snap.text){hidePop();return selectionError();}
+ const n=locate(snap.id);if(!n)return selectionError();if(String(n[snap.field]||'')!==snap.text){flushEdits();if(String(n[snap.field]||'')!==snap.text)return selectionError();}
  hidePop();restoreSelectionBarButtons();hideSelectionBar();
  mutate(()=>{
    const source=locate(snap.id);if(!source)return;

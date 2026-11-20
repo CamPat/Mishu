@@ -131,3 +131,7 @@ Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new
 
 ### 4.16 Sync configuration
 Users no longer enter a server URL. The publisher must deploy the Cloudflare relay and set the GitHub Actions `MISHU_SYNC_URL` variable. See `SYNC_SETUP.md`.
+
+
+## Mishu 4.17 — Direct device linking
+GitHub Pages hosts the interface; WebRTC connects two open devices directly. Manual invitation/response exchange is required; a four-digit code cannot replace signaling without a server. The link is session-only, and Unlink closes the connection. No remote backup. Confirm full replacement before receiving; local recovery is preserved. English and Spanish UI. WebRTC connectivity depends on the network and platform support.

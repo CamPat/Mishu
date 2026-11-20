@@ -123,3 +123,7 @@ Consulta `CONFIGURAR_GOOGLE_DRIVE.md` antes de compilar. El inicio de sesión An
 
 ## Mishu 4.12 — Barra de selección
 Se restauraron los botones Dividir y Mover a tema / mover a texto en la barra de selección para web, Android y Windows, con traducciones ya incluidas.
+
+
+## Mishu 4.15 — Device-to-device sync
+Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new libraries; existing language settings remain unchanged. Four-digit pairing requires deploying the included temporary relay server (see SYNC_SETUP.md). Sender approval, receiving-side comparison, full replacement confirmation, and local recovery backup are included. Not tested with live cross-device deployment.

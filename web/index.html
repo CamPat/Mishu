@@ -36,13 +36,13 @@ body[data-pattern="hearts"] .children{border-left:0;background-image:radial-grad
 .node .toolbar{margin:1px 0}
 .node .children{margin-top:1px}
 .edit-text-wrap .node-content,.edit-text-wrap .edit-text-mirror{padding:2px 4px}
-</style></head><body><header><button class="icon" id="navBtn">☰</button><strong id="studyGreeting">¡A organizar!</strong><button class="icon" id="backBtn" title="Atrás">←</button><button class="icon" id="forwardBtn" title="Adelante">→</button><button class="icon" id="searchBtn">⌕</button><button class="icon" id="syncBtn" title="Sincronización manual">☁</button><button class="icon" id="optBtn">⚙</button></header><div id="popover" class="popover hidden"></div><main id="main"></main><div id="selectionBar" class="hidden" onpointerdown="event.preventDefault()"><button onclick="openRelations()">🔎 Buscar relaciones</button><button id="selectionMaskBtn" onclick="toggleSelectedMask()">Ocultar</button><button class="edit-selection" onclick="formatSelection('bold')"><b>B</b></button><button class="edit-selection" onclick="formatSelection('italic')"><i>I</i></button><button class="edit-selection" onclick="formatSelection('underline')"><u>U</u></button><button class="edit-selection" onclick="highlightSelection()">Resaltar ▾</button><button class="edit-selection" onclick="showSplitChoices()">Dividir ▾</button><button class="edit-selection" id="selectionMoveBtn" onclick="showMoveChoices()">Mover a texto</button></div><dialog id="modal"></dialog><script>
-'use strict';const KEY='mishu_v1',BK='mishu_backups_v1';const $=id=>document.getElementById(id);const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const now=()=>Date.now();function fresh(){const c=uid(),f=uid();return {schema:1,seq:0,updated:now(),collections:[{id:c,name:'Mi biblioteca'}],folders:[{id:f,collectionId:c,name:'General'}],notes:[],trash:[],style:{},templates:[]}}function valid(x){if(!(x&&x.schema===1&&Number.isSafeInteger(x.seq)&&x.seq>=0&&['collections','folders','notes','trash','templates'].every(k=>Array.isArray(x[k]))))return false;const ids=new Set();for(const n of [...x.notes,...x.trash]){if(!n||typeof n.id!=='string'||ids.has(n.id)||typeof n.title!=='string'||!Array.isArray(n.nodes))return false;ids.add(n.id);const check=(nodes,depth=0)=>depth<80&&nodes.every(v=>v&&typeof v.id==='string'&&typeof v.title==='string'&&typeof v.content==='string'&&Array.isArray(v.children)&&check(v.children,depth+1));if(!check(n.nodes))return false;}return true}let db;function load(){let arr=[];for(const k of [KEY,BK])try{let x=JSON.parse(localStorage.getItem(k)||'null');if(k===BK&&Array.isArray(x))arr.push(...x);else if(x)arr.push(x)}catch{}arr=arr.filter(valid).sort((a,b)=>b.seq-a.seq||b.updated-a.updated);db=arr[0]||fresh();if(!db.collections.length){let n=fresh();db.collections=n.collections;db.folders=n.folders}if(!db.folders.length)db.folders=[{id:uid(),collectionId:db.collections[0].id,name:'General'}];db.style??={};if(migrateLegacyMasks())save();applyStyle();if(!arr.length&&!window.MishuNative)save()}function save(){db.seq++;db.updated=now();try{let old=localStorage.getItem(KEY);let backups=JSON.parse(localStorage.getItem(BK)||'[]');if(old){let prev=JSON.parse(old);if(valid(prev)&&!backups.some(x=>x.seq===prev.seq))backups.push(prev)}backups=backups.slice(-4);localStorage.setItem(BK,JSON.stringify(backups));localStorage.setItem(KEY,JSON.stringify(db));if(window.MishuNative)window.MishuNative.save(JSON.stringify(db));if(window.pywebview?.api?.save)window.pywebview.api.save(JSON.stringify(db)).catch(e=>console.error('Windows save',e))}catch(e){alert('No se pudo guardar: '+e.message)}}function nativeRestore(s){try{const x=JSON.parse(s);if(!valid(x))throw Error('Estado nativo inválido');if(x.seq>=db.seq){db=x;if(migrateLegacyMasks())save();localStorage.setItem(KEY,JSON.stringify(db));applyStyle();render()}window.mishuNativeReady=true;}catch(e){console.error(e);alert('No se pudo recuperar la biblioteca: '+e.message)}}window.mishuNativeRestore=nativeRestore;
+</style></head><body><header><button class="icon" id="navBtn">☰</button><strong id="studyGreeting">Let's organize!</strong><button class="icon" id="backBtn" title="Atrás">←</button><button class="icon" id="forwardBtn" title="Adelante">→</button><button class="icon" id="searchBtn">⌕</button><button class="icon" id="syncBtn" title="Device sync">☁</button><button class="icon" id="optBtn">⚙</button></header><div id="popover" class="popover hidden"></div><main id="main"></main><div id="selectionBar" class="hidden" onpointerdown="event.preventDefault()"><button onclick="openRelations()">🔎 Buscar relaciones</button><button id="selectionMaskBtn" onclick="toggleSelectedMask()">Ocultar</button><button class="edit-selection" onclick="formatSelection('bold')"><b>B</b></button><button class="edit-selection" onclick="formatSelection('italic')"><i>I</i></button><button class="edit-selection" onclick="formatSelection('underline')"><u>U</u></button><button class="edit-selection" onclick="highlightSelection()">Resaltar ▾</button><button class="edit-selection" onclick="showSplitChoices()">Dividir ▾</button><button class="edit-selection" id="selectionMoveBtn" onclick="showMoveChoices()">Mover a texto</button></div><dialog id="modal"></dialog><script>
+'use strict';const KEY='mishu_v1',BK='mishu_backups_v1';const $=id=>document.getElementById(id);const uid=()=>crypto.randomUUID?crypto.randomUUID():'id-'+Date.now()+'-'+Math.random().toString(36).slice(2);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const now=()=>Date.now();function fresh(){const c=uid(),f=uid();return {schema:1,seq:0,updated:now(),collections:[{id:c,name:'Mi biblioteca'}],folders:[{id:f,collectionId:c,name:'General'}],notes:[],trash:[],style:{},templates:[],language:'en'}}function valid(x){if(!(x&&x.schema===1&&Number.isSafeInteger(x.seq)&&x.seq>=0&&['collections','folders','notes','trash','templates'].every(k=>Array.isArray(x[k]))))return false;const ids=new Set();for(const n of [...x.notes,...x.trash]){if(!n||typeof n.id!=='string'||ids.has(n.id)||typeof n.title!=='string'||!Array.isArray(n.nodes))return false;ids.add(n.id);const check=(nodes,depth=0)=>depth<80&&nodes.every(v=>v&&typeof v.id==='string'&&typeof v.title==='string'&&typeof v.content==='string'&&Array.isArray(v.children)&&check(v.children,depth+1));if(!check(n.nodes))return false;}return true}let db;function load(){let arr=[];for(const k of [KEY,BK])try{let x=JSON.parse(localStorage.getItem(k)||'null');if(k===BK&&Array.isArray(x))arr.push(...x);else if(x)arr.push(x)}catch{}arr=arr.filter(valid).sort((a,b)=>b.seq-a.seq||b.updated-a.updated);db=arr[0]||fresh();db.language??='en';if(!db.collections.length){let n=fresh();db.collections=n.collections;db.folders=n.folders}if(!db.folders.length)db.folders=[{id:uid(),collectionId:db.collections[0].id,name:'General'}];db.style??={};if(migrateLegacyMasks())save();applyStyle();if(!arr.length&&!window.MishuNative)save()}function save(){db.seq++;db.updated=now();try{let old=localStorage.getItem(KEY);let backups=JSON.parse(localStorage.getItem(BK)||'[]');if(old){let prev=JSON.parse(old);if(valid(prev)&&!backups.some(x=>x.seq===prev.seq))backups.push(prev)}backups=backups.slice(-4);localStorage.setItem(BK,JSON.stringify(backups));localStorage.setItem(KEY,JSON.stringify(db));if(window.MishuNative)window.MishuNative.save(JSON.stringify(db));if(window.pywebview?.api?.save)window.pywebview.api.save(JSON.stringify(db)).catch(e=>console.error('Windows save',e))}catch(e){alert('No se pudo guardar: '+e.message)}}function nativeRestore(s){try{const x=JSON.parse(s);if(!valid(x))throw Error('Estado nativo inválido');if(x.seq>=db.seq){db=x;db.language??='en';if(migrateLegacyMasks())save();localStorage.setItem(KEY,JSON.stringify(db));applyStyle();render()}window.mishuNativeReady=true;}catch(e){console.error(e);alert('No se pudo recuperar la biblioteca: '+e.message)}}window.mishuNativeRestore=nativeRestore;
 let current=null,folder=null,collection=null,history=[],future=[],study=false,selectionText='',selectionNode=null,selectionStart=0,selectionEnd=0,selectionField='content';const findNote=id=>db.notes.find(n=>n.id===id);const allNodes=ns=>ns.flatMap(n=>[n,...allNodes(n.children||[])]);function findNode(nodes,id){for(const n of nodes){if(n.id===id)return n;const a=findNode(n.children||[],id);if(a)return a}return null}let undoStack=[],redoStack=[];
 function mutate(f){if(current)flushEdits();undoStack.push(JSON.stringify(db));if(undoStack.length>35)undoStack.shift();redoStack=[];f();save();render()}
 function undoEdit(){if(study)return;if(!undoStack.length)return;flushEdits();redoStack.push(JSON.stringify(db));db=JSON.parse(undoStack.pop());save();render()}
 function redoEdit(){if(study)return;if(!redoStack.length)return;flushEdits();undoStack.push(JSON.stringify(db));db=JSON.parse(redoStack.pop());save();render()}
-function goto(id,record=true){if(current)flushEdits();if(id&&!findNote(id))return alert('Esta nota ya no existe');if(record){history.push(current);future=[]}current=id;hidePop();render();window.scrollTo(0,0)}function back(){if(current)flushEdits();if(!history.length)return;future.push(current);current=history.pop();render()}function forward(){if(current)flushEdits();if(!future.length)return;history.push(current);current=future.pop();render()}function modal(html){const d=$('modal');d.innerHTML=html;if(!d.open)d.showModal()}function closeModal(){$('modal').close()}function ask(title,value,cb){modal(`<h3>${esc(title)}</h3><form method="dialog" id="askForm"><input id="askValue" type="text" value="${esc(value)}" required style="width:100%"><div class="toolbar"><button type="button" onclick="closeModal()">Cancelar</button><button class="primary">Guardar</button></div></form>`);$('askForm').onsubmit=e=>{e.preventDefault();const v=$('askValue').value.trim();if(v){closeModal();cb(v)}}}function hidePop(){$('popover').classList.add('hidden')}function positionPopover(anchor){const p=$('popover');if(!anchor)return;const r=anchor.getBoundingClientRect();p.style.transform='none';p.style.width='min(290px, calc(100vw - 16px))';p.style.maxHeight='min(70vh, 480px)';p.style.overflowY='auto';const w=p.getBoundingClientRect().width;let x=r.left;if(x+w>innerWidth-8)x=Math.max(8,innerWidth-w-8);if(x<8)x=8;let y=r.bottom+5;const h=p.getBoundingClientRect().height;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-5);if(y<8)y=8;p.style.left=x+'px';p.style.top=y+'px'}function pop(html,anchor){$('popover').removeAttribute('style');$('popover').innerHTML=html;$('popover').classList.remove('hidden');positionPopover(anchor||document.activeElement)};document.addEventListener('pointerdown',e=>{if(!e.target.closest('#popover,#optBtn,#navBtn'))hidePop();if(!e.target.closest('#selectionBar,.node-content,.node-title-input,.study-text'))hideSelectionBar()});$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
+function goto(id,record=true){if(current)flushEdits();if(id&&!findNote(id))return alert('Esta nota ya no existe');if(record){history.push(current);future=[]}current=id;hidePop();render();window.scrollTo(0,0)}function back(){if(current)flushEdits();if(!history.length)return;future.push(current);current=history.pop();render()}function forward(){if(current)flushEdits();if(!future.length)return;history.push(current);current=future.pop();render()}function modal(html){const d=$('modal');d.innerHTML=html;if(!d.open)d.showModal()}function closeModal(){if(deviceSession){syncStop();deviceSession=null}$('modal').close()}function ask(title,value,cb){modal(`<h3>${esc(title)}</h3><form method="dialog" id="askForm"><input id="askValue" type="text" value="${esc(value)}" required style="width:100%"><div class="toolbar"><button type="button" onclick="closeModal()">Cancelar</button><button class="primary">Guardar</button></div></form>`);$('askForm').onsubmit=e=>{e.preventDefault();const v=$('askValue').value.trim();if(v){closeModal();cb(v)}}}function hidePop(){$('popover').classList.add('hidden')}function positionPopover(anchor){const p=$('popover');if(!anchor)return;const r=anchor.getBoundingClientRect();p.style.transform='none';p.style.width='min(290px, calc(100vw - 16px))';p.style.maxHeight='min(70vh, 480px)';p.style.overflowY='auto';const w=p.getBoundingClientRect().width;let x=r.left;if(x+w>innerWidth-8)x=Math.max(8,innerWidth-w-8);if(x<8)x=8;let y=r.bottom+5;const h=p.getBoundingClientRect().height;if(y+h>innerHeight-8)y=Math.max(8,r.top-h-5);if(y<8)y=8;p.style.left=x+'px';p.style.top=y+'px'}function pop(html,anchor){$('popover').removeAttribute('style');$('popover').innerHTML=html;$('popover').classList.remove('hidden');positionPopover(anchor||document.activeElement)};document.addEventListener('pointerdown',e=>{if(!e.target.closest('#popover,#optBtn,#navBtn'))hidePop();if(!e.target.closest('#selectionBar,.node-content,.node-title-input,.study-text'))hideSelectionBar()});$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
 function folderNotes(folderId){return db.notes.filter(n=>n.folderId===folderId)}
 function noteSequence(id,direction){if(current)flushEdits();const n=findNote(id);if(!n)return;const ordered=folderNotes(n.folderId),idx=ordered.findIndex(x=>x.id===id),target=ordered[idx+direction];if(target){goto(target.id);return}if(direction<0)return;const freshNote={id:uid(),folderId:n.folderId,title:'Nueva nota',nodes:[],created:now(),updated:now()};mutate(()=>{const pos=db.notes.findIndex(x=>x.id===n.id);db.notes.splice(pos+1,0,freshNote)});goto(freshNote.id)}
 function moveLibraryItem(kind,id,direction){const list=kind==='collection'?db.collections:kind==='folder'?db.folders:db.notes;const obj=list.find(x=>x.id===id);if(!obj)return;const group=kind==='collection'?list:kind==='folder'?list.filter(x=>x.collectionId===obj.collectionId):list.filter(x=>x.folderId===obj.folderId);const idx=group.findIndex(x=>x.id===id),other=group[idx+direction];if(!other)return;mutate(()=>{const a=list.indexOf(obj),b=list.indexOf(other);[list[a],list[b]]=[list[b],list[a]]})}
@@ -309,7 +309,7 @@ function printPDFDocument(notes,documentTitle){
     frame.innerHTML='<p style="padding:20px">No se pudo generar la vista previa del PDF.</p>';
   }
 }
-function languageUI(){modal(`<h3>Idioma / Language</h3><select id=langSelect><option value=es>Español</option><option value=en>English</option></select><button onclick="setLanguage($('langSelect').value)">Guardar</button>`);$('langSelect').value=db.language||'es'}function setLanguage(l){db.language=l;save();closeModal();render();translateUI();updateStudyGreeting()}function recoverBackup(){let copies=[];try{copies=JSON.parse(localStorage.getItem(BK)||'[]').filter(valid).sort((a,b)=>b.seq-a.seq)}catch{}modal(`<h3>Recuperar copia automática</h3><p>La recuperación reemplazará el estado actual. Exporta antes una copia manual.</p>${copies.map((x,i)=>`<div class=result>Versión ${x.seq} · ${new Date(x.updated).toLocaleString()} · ${x.notes.length} notas <button onclick="restoreCopy(${i})">Restaurar</button></div>`).join('')||'<p>No hay copias recuperables.</p>'}<button onclick="closeModal()">Cerrar</button>`);window._recoveryCopies=copies}
+function languageUI(){modal(`<h3>Idioma / Language</h3><select id=langSelect><option value=es>Español</option><option value=en>English</option></select><button onclick="setLanguage($('langSelect').value)">Guardar</button>`);$('langSelect').value=db.language||'en'}function setLanguage(l){db.language=l;save();closeModal();render();translateUI();updateStudyGreeting()}function recoverBackup(){let copies=[];try{copies=JSON.parse(localStorage.getItem(BK)||'[]').filter(valid).sort((a,b)=>b.seq-a.seq)}catch{}modal(`<h3>Recuperar copia automática</h3><p>La recuperación reemplazará el estado actual. Exporta antes una copia manual.</p>${copies.map((x,i)=>`<div class=result>Versión ${x.seq} · ${new Date(x.updated).toLocaleString()} · ${x.notes.length} notas <button onclick="restoreCopy(${i})">Restaurar</button></div>`).join('')||'<p>No hay copias recuperables.</p>'}<button onclick="closeModal()">Cerrar</button>`);window._recoveryCopies=copies}
 function restoreCopy(i){const x=window._recoveryCopies?.[i];if(!valid(x)||!confirm('¿Restaurar esta copia?'))return;exportBackup();db=structuredClone(x);save();closeModal();goto(null)}
 function diagnostics(){modal(`<h3>Diagnóstico</h3><p>Notas: ${db.notes.length}</p><p>Secuencia de guardado: ${db.seq}</p><p>Última escritura: ${new Date(db.updated).toLocaleString()}</p><p>Copias automáticas: ${JSON.parse(localStorage.getItem(BK)||'[]').length}</p><button onclick="closeModal()">Cerrar</button>`)}
 
@@ -335,7 +335,7 @@ Object.assign(uiTranslations,{
 function updateStudyGreeting(){const el=$('studyGreeting');if(el)el.textContent=db?.language==='en'?"Let's organize!":"¡A organizar!"}
 // Translate only interface chrome. Never translate user-authored titles, note bodies or tag names.
 function translateUI(){
- const lang=db?.language||'es';document.documentElement.lang=lang;
+ const lang=db?.language||'en';document.documentElement.lang=lang;
  if(lang!=='en')return;
  const roots=[$('main'),$('modal'),$('popover'),$('selectionBar'),document.querySelector('header'),document.querySelector('nav')].filter(Boolean);
  const protectedSelector='textarea,[contenteditable],.node-content,.node-row input,.node-title-input,.name,.breadcrumbs,[data-no-translate],.tag-chip,.note-title,.node-title';
@@ -416,156 +416,90 @@ mishuTranslationObserver.observe(document.body,{childList:true,subtree:true});
 window.addEventListener('pywebviewready',async()=>{try{let state=await window.pywebview.api.restore();if(state)nativeRestore(state)}catch(e){console.error('Windows recovery',e)}});
 
 
-// Manual cloud sync. Credentials are kept only in session memory (never in backups).
-const CLOUD_CONFIG_KEY='mishu_cloud_config_v1';
-let cloudSecret='';
-let googleAccessToken='', googleTokenClient=null;
-const GOOGLE_SCOPE='https://www.googleapis.com/auth/drive.file';
-function cloudGoogleClientId(){return (localStorage.getItem('mishu_google_client_id')||'').trim()}
-function cloudGoogleClientIdSave(){const input=$('cloudGoogleClientId');if(!input)return;const id=input.value.trim();if(id&&!/^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i.test(id))throw Error(cloudText('ID de cliente OAuth inválido','Invalid OAuth client ID'));if(id)localStorage.setItem('mishu_google_client_id',id);else localStorage.removeItem('mishu_google_client_id')}
-function loadGoogleIdentity(){return new Promise((resolve,reject)=>{if(window.google?.accounts?.oauth2)return resolve();const script=document.createElement('script');script.src='https://accounts.google.com/gsi/client';script.async=true;script.onload=resolve;script.onerror=()=>reject(Error(cloudText('No se pudo cargar el inicio de sesión de Google','Could not load Google sign-in')));document.head.appendChild(script)})}
-async function googleSignIn(){
- const status=$('cloudStatus');try{
-  cloudGoogleClientIdSave();
-  if(window.pywebview?.api?.google_login){const token=await window.pywebview.api.google_login(cloudGoogleClientId());if(!token)throw Error(cloudText('Inicio de sesión cancelado','Sign-in cancelled'));googleAccessToken=token;cloudSecret=token;}
-  else if(window.MishuNative?.googleLogin){window.MishuNative.googleLogin();if(status)status.textContent=cloudText('Completa el acceso en el navegador y vuelve a Mishu.','Complete sign-in in the browser and return to Mishu.');return;}
-  else{
-   const client_id=cloudGoogleClientId();if(!client_id)throw Error(cloudText('Configura primero el ID de cliente OAuth web','Configure the web OAuth client ID first'));
-   await loadGoogleIdentity();
-   await new Promise((resolve,reject)=>{googleTokenClient=google.accounts.oauth2.initTokenClient({client_id,scope:GOOGLE_SCOPE,callback:result=>{if(result.error)return reject(Error(result.error));googleAccessToken=result.access_token;cloudSecret=googleAccessToken;resolve()}});googleTokenClient.requestAccessToken({prompt:'consent'})});
-  }
-  if(status)status.textContent=cloudText('Google Drive conectado. Selecciona Actualizar / Sincronizar.','Google Drive connected. Choose Update / Sync.');
- }catch(e){if(status)status.textContent=cloudText('Error: ','Error: ')+e.message}
+// Device-to-device one-way transfer. The optional relay stores temporary snapshots,
+// not permanent cloud backups. The sending device MUST approve each request.
+const RELAY_KEY='mishu_relay_url_v1';
+let deviceSession=null,devicePoll=null;
+function syncT(en,es){return db?.language==='es'?es:en}
+function syncURL(){return (localStorage.getItem(RELAY_KEY)||'').replace(/\/+$/,'')}
+function syncStatus(msg){const e=$('deviceSyncStatus');if(e)e.textContent=msg}
+function syncStop(){if(devicePoll){clearInterval(devicePoll);devicePoll=null}}
+function syncConfigure(){
+ const value=$('relayUrl')?.value.trim().replace(/\/+$/,'');
+ if(!value||!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(value))throw Error(syncT('Enter a valid HTTPS relay URL.','Introduce una URL HTTPS válida del servidor de conexión.'));
+ localStorage.setItem(RELAY_KEY,value);return value;
 }
-window.mishuGoogleError=function(message){const status=$('cloudStatus');if(status)status.textContent=cloudText('Error: ','Error: ')+message};
-window.mishuGoogleToken=function(token){googleAccessToken=token;cloudSecret=token;const status=$('cloudStatus');if(status)status.textContent=cloudText('Google Drive conectado.','Google Drive connected.')};
-
-function cloudText(es,en){return db?.language==='en'?en:es}
-function cloudConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'{}')}catch{return {}}}
-function cloudUI(){
- const cfg=cloudConfig(), provider=cfg.provider||'github';
- modal(`<h3>${cloudText('Sincronización manual','Manual synchronization')}</h3>
- <p>${cloudText('Elige una nube y una carpeta de guardado. Se comparará la fecha de la biblioteca local con la de la nube. No se mezclan cambios.','Choose a cloud and save folder. The local library timestamp is compared with the cloud copy. Changes are not merged.')}</p>
- <label>${cloudText('Proveedor','Provider')}</label><select id="cloudProvider" onchange="cloudProviderFields()"><option value="github" ${provider==='github'?'selected':''}>GitHub</option><option value="dropbox" ${provider==='dropbox'?'selected':''}>Dropbox</option><option value="gdrive" ${provider==='gdrive'?'selected':''}>Google Drive</option></select>
- <div id="cloudProviderFields"></div>
- <label>${cloudText('Carpeta / partida','Folder / save slot')}</label><input id="cloudSlot" style="width:100%" value="${esc(cfg.slot||'principal')}" placeholder="principal">
- <p class="muted">${cloudText('Cada carpeta es una partida independiente. Usa exactamente la misma cuenta, repositorio (si corresponde) y carpeta en los demás dispositivos.','Each folder is an independent save slot. Use the same account, repository (if applicable), and folder on your other devices.')}</p>
- <div id="cloudTokenWrap"><label>${cloudText('Token de acceso (no se guarda)','Access token (not stored)')}</label><input id="cloudToken" type="password" autocomplete="off" style="width:100%" placeholder="${cloudText('Pegar token','Paste token')}">
- <p class="muted">${cloudText('El token solo permanece en memoria durante esta sesión. Utiliza permisos mínimos. No compartas el token ni lo incluyas en una exportación.','The token stays in memory only for this session. Use minimum permissions. Never share the token or include it in exports.')}</p>
- </div><div class="toolbar"><button onclick="closeModal()">${cloudText('Cancelar','Cancel')}</button><button class="primary" id="cloudGo" onclick="cloudSync()">${cloudText('Actualizar / Sincronizar','Update / Sync')}</button></div><p id="cloudStatus" role="status"></p>`);
- cloudProviderFields();
+function deviceSyncUI(){
+ syncStop();deviceSession=null;
+ modal(`<h3>${syncT('Sync devices','Sincronizar dispositivos')}</h3><p>${syncT('Transfer your library directly between devices using a temporary four-digit code. No Google, Dropbox, or GitHub account required. The sender must stay open and approve the transfer.','Transfiere tu biblioteca entre dispositivos con un código temporal de cuatro dígitos. No necesitas cuentas de Google, Dropbox ni GitHub. El dispositivo emisor debe permanecer abierto y aprobar la transferencia.')}</p>
+ <label>${syncT('Connection server (one-time setup)','Servidor de conexión (configuración inicial)')}</label><input id="relayUrl" style="width:100%" value="${esc(syncURL())}" placeholder="https://mishu-sync.example.workers.dev" autocomplete="off"><p class="muted">${syncT('A small relay server is required for devices on different networks. Deploy the included Cloudflare Worker once, then use its URL on all devices. Data is kept temporarily, not as a cloud backup.','Para conectar dispositivos en redes distintas se necesita un pequeño servidor intermediario. Publica una vez el Cloudflare Worker incluido y usa su URL en todos los dispositivos. Los datos se guardan temporalmente, no como respaldo en la nube.')}</p>
+ <div class="toolbar" style="display:flex;flex-direction:column;align-items:stretch;gap:8px"><button onclick="syncStartSender()">${syncT('Sync another device from this one','Sincronizar otro dispositivo a partir de este')}</button><button onclick="syncReceiverForm()">${syncT('Sync this device from another','Sincronizar este dispositivo a partir de otro')}</button><button onclick="syncStop();closeModal()">${syncT('Cancel','Cancelar')}</button></div><p id="deviceSyncStatus" role="status"></p>`);
 }
-function cloudProviderFields(){
- const p=$('cloudProvider').value,cfg=cloudConfig();
- $('cloudProviderFields').innerHTML=p==='gdrive'?`<label>${cloudText('ID de cliente OAuth de Google (web/Windows)','Google OAuth client ID (web/Windows)')}</label><input id="cloudGoogleClientId" style="width:100%" value="${esc(cloudGoogleClientId())}" placeholder="123456-xxx.apps.googleusercontent.com"><p class="muted">${cloudText('Crea un cliente OAuth en Google Cloud. En web usa tipo Aplicación web y registra el origen de tu sitio. En Windows usa un cliente de escritorio. No introduzcas contraseñas.','Create an OAuth client in Google Cloud. For web use Web application and register your site origin. For Windows use a Desktop client. Never enter passwords.')}</p><button onclick="googleSignIn()">${cloudText('Iniciar sesión con Google','Sign in with Google')}</button>`:p==='github'?`<label>${cloudText('Repositorio privado (propietario/repositorio)','Private repository (owner/repository)')}</label><input id="cloudRepo" style="width:100%" value="${esc(cfg.repo||'')}" placeholder="usuario/mishu-backups"><p class="muted">${cloudText('El repositorio debe existir. Token GitHub con permiso Contents: Read and write.','Repository must already exist. GitHub token requires Contents: Read and write.')}</p>`:`<p class="muted">${cloudText('Usa un token OAuth de Dropbox con acceso a archivos.','Use a Dropbox OAuth access token with file access.')}</p>`;
- $('cloudTokenWrap').style.display=p==='gdrive'?'none':'';
+async function syncFetch(path,body){
+ const url=syncURL();if(!url)throw Error(syncT('Set up the connection server URL first.','Configura primero la URL del servidor de conexión.'));
+ const response=await fetch(url+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store'});
+ let result;try{result=await response.json()}catch{throw Error('HTTP '+response.status)}
+ if(!response.ok||!result.ok)throw Error(result.error||'HTTP '+response.status);return result;
 }
-function cloudPath(slot){let parts=slot.split('/').map(x=>x.trim()).filter(Boolean);if(!parts.length||parts.some(x=>!/^[-\w .áéíóúÁÉÍÓÚñÑ]{1,70}$/.test(x)||x==='.'||x==='..'))throw Error(cloudText('Nombre de carpeta no válido','Invalid folder name'));return parts.join('/')+'/mishu-backup.json'}
-function b64encode(str){const bytes=new TextEncoder().encode(str);let out='';for(let i=0;i<bytes.length;i+=8192)out+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(out)}
-function b64decode(str){const raw=atob(str.replace(/\s/g,'')),bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
-async function cloudRequest(url,opts){let res;try{res=await fetch(url,opts)}catch(e){throw Error(cloudText('Error de conexión o CORS: ','Connection or CORS error: ')+e.message)}return res}
-async function cloudRead(provider,repo,path,token){
- if(provider==='gdrive')return driveRead(path,token);
- if(provider==='github'){
-  const url='https://api.github.com/repos/'+repo.split('/').map(encodeURIComponent).join('/')+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
-  const headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
-  const r=await cloudRequest(url,{headers,cache:'no-store'});if(r.status===404)return {data:null,sha:null};if(!r.ok)throw Error('GitHub HTTP '+r.status+' '+(await r.text()).slice(0,180));
-  const x=await r.json();if(!x.content||!x.sha)throw Error('Invalid GitHub file');return {data:JSON.parse(b64decode(x.content)),sha:x.sha,url,headers};
- }
- const headers={'Authorization':'Bearer '+token,'Dropbox-API-Arg':JSON.stringify({path:'/'+path})};
- const r=await cloudRequest('https://content.dropboxapi.com/2/files/download',{method:'POST',headers});
- if(r.status===409){const detail=await r.text();if(detail.includes('not_found'))return {data:null};throw Error('Dropbox HTTP 409 '+detail.slice(0,180))}
- if(!r.ok)throw Error('Dropbox HTTP '+r.status+' '+(await r.text()).slice(0,180));return {data:JSON.parse(await r.text())};
-}
-async function cloudWrite(provider,repo,path,token,data,sha){
- const payload=JSON.stringify(data);
- if(provider==='gdrive')return driveWrite(path,token,data,sha);
- if(provider==='github'){
-  const url='https://api.github.com/repos/'+repo.split('/').map(encodeURIComponent).join('/')+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
-  const body={message:'Mishu manual backup '+new Date().toISOString(),content:b64encode(payload)};if(sha)body.sha=sha;
-  const r=await cloudRequest(url,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},body:JSON.stringify(body)});
-  if(!r.ok)throw Error('GitHub HTTP '+r.status+' '+(await r.text()).slice(0,180));return;
- }
- const r=await cloudRequest('https://content.dropboxapi.com/2/files/upload',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/octet-stream','Dropbox-API-Arg':JSON.stringify({path:'/'+path,mode:'overwrite',autorename:false,mute:true})},body:payload});
- if(!r.ok)throw Error('Dropbox HTTP '+r.status+' '+(await r.text()).slice(0,180));
-}
-// Google Drive REST API. A user-supplied short-lived OAuth access token is kept only in memory.
-// drive.file scope only sees files/folders created or explicitly opened by this application.
-const DRIVE_API='https://www.googleapis.com/drive/v3/files';
-async function driveApi(url,token,options={}){
- const headers={'Authorization':'Bearer '+token,...(options.headers||{})};
- const r=await cloudRequest(url,{...options,headers});
- if(!r.ok)throw Error('Google Drive HTTP '+r.status+' '+(await r.text()).slice(0,250));
- return r;
-}
-function driveQuote(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
-async function driveFind(parent,name,mime,token){
- const q="name = '"+driveQuote(name)+"' and '"+driveQuote(parent)+"' in parents and trashed = false"+(mime?" and mimeType = '"+driveQuote(mime)+"'":"");
- const u=DRIVE_API+'?q='+encodeURIComponent(q)+'&fields='+encodeURIComponent('nextPageToken,files(id,name,mimeType,modifiedTime)')+'&pageSize=100';
- const r=await driveApi(u,token);const obj=await r.json();return (obj.files||[]).sort((a,b)=>String(b.modifiedTime).localeCompare(String(a.modifiedTime)))[0]||null;
-}
-async function driveFolder(parent,name,token,create){
- let f=await driveFind(parent,name,'application/vnd.google-apps.folder',token);
- if(!f&&create){const r=await driveApi(DRIVE_API+'?fields=id,name',token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,mimeType:'application/vnd.google-apps.folder',parents:[parent]})});f=await r.json()}
- return f?.id||null;
-}
-async function driveLocation(path,token,create){
- const parts=['Mishu',...path.split('/')];const fileName=parts.pop();let parent='root';
- for(const part of parts){parent=await driveFolder(parent,part,token,create);if(!parent)return {parent:null,file:null}}
- return {parent,file:await driveFind(parent,fileName,null,token),fileName};
-}
-async function driveRead(path,token){
- const loc=await driveLocation(path,token,false);
- if(!loc.file)return {data:null,sha:null};
- const r=await driveApi(DRIVE_API+'/'+encodeURIComponent(loc.file.id)+'?alt=media',token);
- return {data:JSON.parse(await r.text()),sha:loc.file.id,version:loc.file.modifiedTime};
-}
-async function driveWrite(path,token,data,previousId){
- const loc=await driveLocation(path,token,true);const payload=JSON.stringify(data);
- if(loc.file){
-  if(previousId&&previousId!==loc.file.id)throw Error(cloudText('El archivo remoto cambió; vuelve a sincronizar.','Remote file changed; sync again.'));
-  await driveApi('https://www.googleapis.com/upload/drive/v3/files/'+encodeURIComponent(loc.file.id)+'?uploadType=media',token,{method:'PATCH',headers:{'Content-Type':'application/json'},body:payload});
- }else{
-  const boundary='mishu'+Date.now();const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:loc.fileName,mimeType:'application/json',parents:[loc.parent]})+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+payload+'\r\n--'+boundary+'--';
-  await driveApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',token,{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body});
- }
-}
-function cloudKeepLocalBackup(){try{const old=localStorage.getItem(KEY);if(old){const prev=JSON.parse(old);if(valid(prev)){let arr=JSON.parse(localStorage.getItem(BK)||'[]');arr.push(prev);localStorage.setItem(BK,JSON.stringify(arr.slice(-4)))}}}catch(e){console.warn('Backup before cloud restore',e)}}
-async function cloudSync(){
- const button=$('cloudGo'),status=$('cloudStatus');if(!button||button.disabled)return;
- button.disabled=true;status.textContent=cloudText('Conectando…','Connecting…');
+function syncCounts(data){let topics=0;function walk(nodes){for(const n of nodes||[]){topics++;walk(n.children)}}for(const note of data.notes||[])walk(note.nodes);return {collections:data.collections.length,folders:data.folders.length,notes:data.notes.length,topics,trash:data.trash.length,templates:data.templates.length}}
+function syncCountText(c){return `${c.collections} ${syncT('collections','colecciones')}, ${c.folders} ${syncT('folders','carpetas')}, ${c.notes} ${syncT('notes','notas')}, ${c.topics} ${syncT('topics','temas')}, ${c.trash} ${syncT('items in trash','elementos en papelera')}, ${c.templates} ${syncT('templates','moldes')}`}
+async function syncStartSender(){
  try{
-  if(current)flushEdits();
-  const provider=$('cloudProvider').value,repo=provider==='github'?$('cloudRepo').value.trim():'',slot=$('cloudSlot').value.trim();
-  const token=provider==='gdrive'?googleAccessToken:($('cloudToken').value.trim()||cloudSecret);
-  if(!token)throw Error(cloudText('Introduce un token de acceso','Enter an access token'));
-  if(provider==='github'&&!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo))throw Error(cloudText('Usa propietario/repositorio','Use owner/repository'));
-  const path=cloudPath(slot);
-  localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify({provider,repo,slot}));cloudSecret=token;
-  const remote=await cloudRead(provider,repo,path,token);
-  if(remote.data&&!valid(remote.data))throw Error(cloudText('La copia remota no es una biblioteca válida','Remote backup is not a valid library'));
-  const localTime=Number(db.updated)||0,remoteTime=remote.data?Number(remote.data.updated)||0:0;
-  if(!remote.data||localTime>remoteTime){
-   const message=remote.data?cloudText('La copia local es más reciente. ¿Sobrescribir la copia en la nube?','Local copy is newer. Overwrite the cloud copy?'):cloudText('No existe copia en esta carpeta. ¿Subir la biblioteca local?','No backup exists in this folder. Upload local library?');
-   if(!confirm(message)){status.textContent=cloudText('Cancelado','Cancelled');return}
-   // Check the remote again to reduce the risk of overwriting another device's update.
-   const check=await cloudRead(provider,repo,path,token);
-   if(JSON.stringify(check.data)!==JSON.stringify(remote.data))throw Error(cloudText('La nube cambió durante la operación. Repite la sincronización.','Cloud changed during synchronization. Try again.'));
-   await cloudWrite(provider,repo,path,token,db,check.sha);
-   status.textContent=cloudText('Biblioteca subida a la nube correctamente.','Library uploaded successfully.');
-  }else if(remoteTime>localTime){
-   if(!confirm(cloudText('La nube es más reciente. ¿Reemplazar la biblioteca local? Se conservará una copia local de recuperación.','Cloud copy is newer. Replace the local library? A local recovery backup will be kept.'))){status.textContent=cloudText('Cancelado','Cancelled');return}
-   cloudKeepLocalBackup();db=remote.data;localStorage.setItem(KEY,JSON.stringify(db));
-   if(window.MishuNative?.save)window.MishuNative.save(JSON.stringify(db));
-   if(window.pywebview?.api?.save)await window.pywebview.api.save(JSON.stringify(db));
-   current=null;history.length=0;future.length=0;applyStyle();render();
-   status.textContent=cloudText('Biblioteca restaurada desde la nube.','Library restored from cloud.');
-  }else{
-   if(JSON.stringify(remote.data)===JSON.stringify(db))status.textContent=cloudText('Ya está sincronizado.','Already synchronized.');
-   else status.textContent=cloudText('Ambas copias tienen la misma fecha, pero difieren. No se sobrescribió ninguna. Revisa los dispositivos y exporta una copia antes de continuar.','Both copies have the same timestamp but differ. Neither was overwritten. Review devices and export a backup first.');
-  }
- }catch(e){status.textContent=cloudText('Error: ','Error: ')+e.message;console.error('Cloud sync',e)}finally{button.disabled=false}
+  syncConfigure();if(current)flushEdits();
+  const secret=crypto.randomUUID(),snapshot=structuredClone(db);
+  const result=await syncFetch('/create',{secret,data:snapshot});
+  syncStop();deviceSession={role:'sender',secret,code:result.code,requestId:null};
+  modal(`<h3>${syncT('Your temporary code','Tu código temporal')}</h3><p style="font-size:2rem;font-weight:bold;letter-spacing:.3em;text-align:center">${result.code}</p><p>${syncT('Enter this code on the other device within 10 minutes. Keep this window open. You must approve the request before anything is sent.','Introduce este código en el otro dispositivo antes de 10 minutos. Mantén esta ventana abierta. Debes aprobar la solicitud antes de enviar los datos.')}</p><p id="deviceSyncStatus" role="status">${syncT('Waiting for the other device…','Esperando al otro dispositivo…')}</p><button onclick="syncStop();deviceSession=null;closeModal()">${syncT('Close','Cerrar')}</button>`);
+  devicePoll=setInterval(syncPollSender,2200);
+ }catch(e){syncStatus(syncT('Error: ','Error: ')+e.message)}
 }
-
-$('syncBtn').onclick=cloudUI; $('navBtn').onclick=()=>pop(`<button onclick="hidePop();goto(null)">Biblioteca</button><button onclick="hidePop();createNote()">Nueva nota</button><button onclick="hidePop();newFolder()">Nueva carpeta</button><button onclick="hidePop();templateUI()">Moldes</button><button onclick="hidePop();openTrash()">Papelera</button>`);$('optBtn').onclick=()=>pop(`<button onclick="hidePop();styleUI()">Editor de estilo</button><button onclick="hidePop();cloudUI()">Sincronización manual</button><button onclick="hidePop();exportBackup()">Exportar backup</button><button onclick="hidePop();importBackup()">Importar backup</button><button onclick="hidePop();importItemUI()">Importar colección / carpeta / nota</button><button onclick="hidePop();diagnostics()">Diagnóstico</button><button onclick="hidePop();recoverBackup()">Restaurar copia automática</button><button onclick="hidePop();languageUI()">Idioma / Language</button><button onclick="hidePop();window.open('https://ko-fi.com/campat','_blank','noopener')">Donar</button>`);$('backBtn').onclick=back;$('forwardBtn').onclick=forward;$('searchBtn').onclick=()=>searchUI();window.addEventListener('beforeunload',()=>{if(current)flushEdits()});load();render();updateStudyGreeting();setupBrowserFolderAccess();
+async function syncPollSender(){
+ const session=deviceSession;if(!session||session.role!=='sender')return;
+ try{const r=await syncFetch('/sender-status',{code:session.code,secret:session.secret});
+  if(r.status==='requested'&&r.requestId!==session.requestId){
+   session.requestId=r.requestId;syncStop();
+   modal(`<h3>${syncT('Transfer request','Solicitud de transferencia')}</h3><p>${syncT('Another device has entered your code. Approve sending your ENTIRE library? Only approve if you initiated this transfer.','Otro dispositivo introdujo tu código. ¿Autorizas enviar TODA tu biblioteca? Aprueba únicamente si tú iniciaste la transferencia.')}</p><div class="toolbar"><button onclick="syncReject()">${syncT('Reject','Rechazar')}</button><button class="primary" onclick="syncApprove()">${syncT('Approve transfer','Aprobar transferencia')}</button></div><p id="deviceSyncStatus"></p>`);
+  }else if(r.status==='complete'){syncStop();syncStatus(syncT('Transfer completed.','Transferencia completada.'))}
+ }catch(e){syncStop();syncStatus(syncT('Connection error: ','Error de conexión: ')+e.message)}
+}
+async function syncApprove(){const x=deviceSession;if(!x)return;try{await syncFetch('/approve',{code:x.code,secret:x.secret,requestId:x.requestId});modal(`<h3>${syncT('Transfer approved','Transferencia aprobada')}</h3><p id="deviceSyncStatus">${syncT('The receiving device can now review and restore your library.','El dispositivo receptor ya puede revisar y restaurar tu biblioteca.')}</p><button onclick="syncStop();closeModal()">${syncT('Close','Cerrar')}</button>`);devicePoll=setInterval(syncPollSender,2200)}catch(e){syncStatus(e.message)}}
+async function syncReject(){const x=deviceSession;if(!x)return;try{await syncFetch('/reject',{code:x.code,secret:x.secret,requestId:x.requestId});syncStop();syncStatus(syncT('Request rejected.','Solicitud rechazada.'));devicePoll=setInterval(syncPollSender,2200)}catch(e){syncStatus(e.message)}}
+function syncReceiverForm(){
+ try{syncConfigure()}catch(e){syncStatus(e.message);return}
+ modal(`<h3>${syncT('Receive a library','Recibir una biblioteca')}</h3><p>${syncT('Enter the four-digit code shown on the sending device.','Introduce el código de cuatro dígitos mostrado en el dispositivo emisor.')}</p><input id="syncCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000" style="font-size:1.6rem;letter-spacing:.2em;width:100%"><div class="toolbar"><button onclick="deviceSyncUI()">${syncT('Back','Volver')}</button><button class="primary" onclick="syncRequest()">${syncT('Connect','Conectar')}</button></div><p id="deviceSyncStatus"></p>`)
+}
+async function syncRequest(){
+ const code=($('syncCode')?.value||'').trim();if(!/^\d{4}$/.test(code)){syncStatus(syncT('Enter four digits.','Introduce cuatro dígitos.'));return}
+ try{const token=crypto.randomUUID();await syncFetch('/request',{code,token});syncStop();deviceSession={role:'receiver',code,token};modal(`<h3>${syncT('Waiting for approval','Esperando autorización')}</h3><p>${syncT('Approve the transfer on the sending device. Your current library has not been changed.','Aprueba la transferencia en el dispositivo emisor. Tu biblioteca actual no se ha modificado.')}</p><p id="deviceSyncStatus"></p><button onclick="syncStop();deviceSession=null;closeModal()">${syncT('Cancel','Cancelar')}</button>`);devicePoll=setInterval(syncPollReceiver,2200)}catch(e){syncStatus(e.message)}
+}
+async function syncPollReceiver(){const x=deviceSession;if(!x||x.role!=='receiver')return;try{
+ const r=await syncFetch('/receive',{code:x.code,token:x.token});
+ if(r.status==='approved'&&r.data){syncStop();if(!valid(r.data))throw Error(syncT('Invalid received library.','Biblioteca recibida no válida.'));x.pending=r.data;syncShowPreview()}
+ else if(r.status==='rejected'){syncStop();syncStatus(syncT('The sender rejected this request.','El emisor rechazó esta solicitud.'))}
+ }catch(e){syncStop();syncStatus(e.message)}}
+function syncShowPreview(){
+ const x=deviceSession;if(!x?.pending)return;
+ if(current)flushEdits();const before=syncCounts(db),after=syncCounts(x.pending);
+ modal(`<h3>${syncT('Confirm replacement','Confirmar reemplazo')}</h3><p><strong>${syncT('This is a full replacement, not a merge.','Esto reemplaza toda la biblioteca; no combina cambios.')}</strong></p>
+ <p>${syncT('Current device (will be replaced):','Dispositivo actual (se reemplazará):')}<br>${syncCountText(before)}</p>
+ <p>${syncT('Incoming library:','Biblioteca recibida:')}<br>${syncCountText(after)}</p>
+ <p>${syncT('Difference (incoming minus current):','Diferencia (recibido menos actual):')} ${after.notes-before.notes} ${syncT('notes','notas')}, ${after.topics-before.topics} ${syncT('topics','temas')}, ${after.folders-before.folders} ${syncT('folders','carpetas')}.</p>
+ <p style="font-weight:bold">${syncT('All local-only notes, topics, folders and edits will be lost from the active library. A recovery backup will be kept.','Todas las notas, temas, carpetas y modificaciones que existan solamente aquí desaparecerán de la biblioteca activa. Se conservará una copia de recuperación.')}</p>
+ <div class="toolbar"><button onclick="syncStop();closeModal()">${syncT('Cancel','Cancelar')}</button><button class="primary" onclick="syncApply()">${syncT('Replace my library','Reemplazar mi biblioteca')}</button></div>`)
+}
+async function syncApply(){const x=deviceSession;if(!x?.pending||!valid(x.pending))return;
+ if(!confirm(syncT('Final confirmation: replace this device’s library?','Confirmación final: ¿reemplazar la biblioteca de este dispositivo?')))return;
+ try{
+  // Persist a recovery copy before changing any live state.
+  const original=structuredClone(db);const backups=JSON.parse(localStorage.getItem(BK)||'[]');backups.push(original);localStorage.setItem(BK,JSON.stringify(backups.slice(-4)));
+  const incoming=structuredClone(x.pending);incoming.language=db.language||'en';incoming.seq=Math.max(db.seq,incoming.seq)+1;incoming.updated=Date.now();
+  localStorage.setItem(KEY,JSON.stringify(incoming));
+  if(window.MishuNative)window.MishuNative.save(JSON.stringify(incoming));
+  if(window.pywebview?.api?.save)await window.pywebview.api.save(JSON.stringify(incoming));
+  db=incoming;current=null;history=[];future=[];render();translateUI();updateStudyGreeting();
+  await syncFetch('/complete',{code:x.code,token:x.token});syncStop();deviceSession=null;
+  modal(`<h3>${syncT('Synchronization complete','Sincronización completada')}</h3><p>${syncT('The incoming library replaced the local library. A local recovery copy was saved.','La biblioteca recibida reemplazó la biblioteca local. Se guardó una copia local de recuperación.')}</p><button onclick="closeModal()">OK</button>`);
+ }catch(e){syncStatus(syncT('Error: ','Error: ')+e.message)}
+}
+$('syncBtn').onclick=deviceSyncUI; $('navBtn').onclick=()=>pop(`<button onclick="hidePop();goto(null)">Biblioteca</button><button onclick="hidePop();createNote()">Nueva nota</button><button onclick="hidePop();newFolder()">Nueva carpeta</button><button onclick="hidePop();templateUI()">Moldes</button><button onclick="hidePop();openTrash()">Papelera</button>`);$('optBtn').onclick=()=>pop(`<button onclick="hidePop();styleUI()">Editor de estilo</button><button onclick="hidePop();deviceSyncUI()">Sincronizar dispositivos</button><button onclick="hidePop();exportBackup()">Exportar backup</button><button onclick="hidePop();importBackup()">Importar backup</button><button onclick="hidePop();importItemUI()">Importar colección / carpeta / nota</button><button onclick="hidePop();diagnostics()">Diagnóstico</button><button onclick="hidePop();recoverBackup()">Restaurar copia automática</button><button onclick="hidePop();languageUI()">Idioma / Language</button><button onclick="hidePop();window.open('https://ko-fi.com/campat','_blank','noopener')">Donar</button>`);$('backBtn').onclick=back;$('forwardBtn').onclick=forward;$('searchBtn').onclick=()=>searchUI();window.addEventListener('beforeunload',()=>{if(current)flushEdits()});load();render();updateStudyGreeting();setupBrowserFolderAccess();
 </script></body></html>

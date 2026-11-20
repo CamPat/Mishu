@@ -64,3 +64,7 @@ Botón ☁ y menú de sincronización, GitHub (repositorio privado) y Dropbox me
 
 ## Mishu 4.8 — Google Drive
 Se agregó Google Drive al selector de sincronización manual. Requiere un token OAuth de acceso temporal con permisos Drive; no incluye inicio de sesión de Google integrado en Windows o Android. La API crea `Mishu/<carpeta>/mishu-backup.json` en Mi unidad. La autenticación, los permisos de la API y el acceso CORS deben configurarse y comprobarse en cada plataforma. No se almacenan tokens en las copias. La sincronización no fusiona cambios concurrentes.
+
+
+## Mishu 4.15 — Device-to-device sync
+Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new libraries; existing language settings remain unchanged. Four-digit pairing requires deploying the included temporary relay server (see SYNC_SETUP.md). Sender approval, receiving-side comparison, full replacement confirmation, and local recovery backup are included. Not tested with live cross-device deployment.

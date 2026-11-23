@@ -215,3 +215,9 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Escribe JSON UTF-8 directamente al URI elegido por el usuario y muestra éxito/error.
 - Navegador mantiene descarga con Blob y URL temporal.
 - Sin permiso de almacenamiento requerido; no altera la biblioteca.
+
+## 4.37 — Reparación de compilación Android
+- Sustituidos los callbacks internos no accesibles de PrintDocumentAdapter por PrintManager.print (API pública).
+- PDF: abre el diálogo de impresión Android, donde se elige Guardar como PDF; conserva orientación y tamaño configurados.
+- JSON: mantiene el selector nativo ACTION_CREATE_DOCUMENT de la versión 4.36.
+- No se ha ejecutado compilación Android en este entorno.

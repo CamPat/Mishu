@@ -1,12 +1,9 @@
 plugins { id 'com.android.application' }
 
-def oauthClient = (project.findProperty('MISHU_GOOGLE_ANDROID_CLIENT_ID') ?: '').toString()
-def oauthRedirectScheme = (project.findProperty('MISHU_GOOGLE_ANDROID_REDIRECT_SCHEME') ?: 'com.mishu.oauth.notconfigured').toString()
-def oauthRedirectUri = oauthRedirectScheme + ':/oauth2redirect'
 android { buildFeatures { buildConfig true }; namespace 'com.mishu.app'; compileSdk 35
- defaultConfig { applicationId 'com.mishu.app'; minSdk 26; targetSdk 35; versionCode 50; versionName '4.10.0'; manifestPlaceholders = [appAuthRedirectScheme: oauthRedirectScheme]; buildConfigField 'String', 'GOOGLE_OAUTH_CLIENT_ID', '"' + oauthClient + '"'; buildConfigField 'String', 'GOOGLE_REDIRECT_URI', '"' + oauthRedirectUri + '"' }
+ defaultConfig { applicationId 'com.mishu.app'; minSdk 26; targetSdk 35; versionCode 51; versionName '4.20.0' }
  buildTypes { release { minifyEnabled false } }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 
-dependencies { implementation "net.openid:appauth:0.11.1" }
+dependencies { }

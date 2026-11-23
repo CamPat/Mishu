@@ -1,3 +1,10 @@
+# Mishu 4.22 — Search, links, split view
+
+- Global search across collections with tag filtering and highlighted results.
+- Bidirectional note references and automatic backlinks.
+- Side-by-side read-only note comparison.
+- Local-only operation; no synchronization.
+
 ## Mishu 4.14 — Menú Dividir estable
 
 La acción Dividir abre un diálogo independiente de la barra de selección. Se conserva el texto seleccionado incluso con guardado pendiente. Traducciones español/inglés.
@@ -135,3 +142,17 @@ Users no longer enter a server URL. The publisher must deploy the Cloudflare rel
 
 ## Mishu 4.17 — Direct device linking
 GitHub Pages hosts the interface; WebRTC connects two open devices directly. Manual invitation/response exchange is required; a four-digit code cannot replace signaling without a server. The link is session-only, and Unlink closes the connection. No remote backup. Confirm full replacement before receiving; local recovery is preserved. English and Spanish UI. WebRTC connectivity depends on the network and platform support.
+
+
+Mishu 4.18: Improved direct-link wizard UI with clear steps, prominent copy button, collapsed technical SDP messages, mobile-responsive layout, and English/Spanish labels. No networking architecture changes.
+
+
+## 4.19 Short-code linking
+See SHORT_CODE_SETUP.md. A publisher-deployed signaling endpoint is mandatory; GitHub Pages alone cannot exchange WebRTC negotiation messages.
+
+
+## Mishu 4.20 — Offline only
+Sincronización, vinculación entre dispositivos y botón de nube eliminados. Se mantienen las copias locales y la importación/exportación manual de bibliotecas.
+
+
+Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista offline de jerarquías con conexiones, colores y fuentes del estilo activo, zoom, impresión y traducción inglés/español.

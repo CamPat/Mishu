@@ -68,3 +68,7 @@ Se agregó Google Drive al selector de sincronización manual. Requiere un token
 
 ## Mishu 4.15 — Device-to-device sync
 Removed Google Drive, Dropbox and GitHub sync UI. English is the default for new libraries; existing language settings remain unchanged. Four-digit pairing requires deploying the included temporary relay server (see SYNC_SETUP.md). Sender approval, receiving-side comparison, full replacement confirmation, and local recovery backup are included. Not tested with live cross-device deployment.
+
+
+## Mishu 4.20 — Offline only
+Sincronización, vinculación entre dispositivos y botón de nube eliminados. Se mantienen las copias locales y la importación/exportación manual de bibliotecas.

@@ -172,3 +172,23 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 
 ## 4.23
 - Traducciones EN/ES para selector de carpeta Mishu y estado de conexion, incluso al cambiar idioma.
+\n## 4.24\n- Nueva nota: selección obligatoria de colección y carpeta, con interfaz bilingüe.\n- Mover nota: primero colección y después carpeta.\n- Android: preservar WebView y nota al girar la pantalla.\n- Eliminado modo de comparación de notas y sus controles.\n
+## 4.25
+- Tablas editables por tema, con encabezados, filas y columnas, guardado local y modo estudio.
+
+## 4.26
+- Selección de celdas y rangos (Mayús + clic), combinación y separación, colores de fondo en tablas.
+
+## 4.27
+- Multimedia enlazada HTTPS por celda (imagen, audio, video, PDF, enlaces) con vista integrada cuando el proveedor lo permite.
+- Ancho de columnas ajustable mediante arrastre desde el encabezado, persistido en la biblioteca local.
+
+## 4.28
+- Varias imágenes, videos, audios, PDF y enlaces por celda.
+- Gestor de multimedia por celda: añadir, quitar y cambiar orden.
+- Compatible con celdas antiguas que contenían un solo recurso.
+
+## 4.29
+- Moldes conservan tablas, combinaciones, colores, tamaños y multimedia; regeneración de IDs de tablas al aplicar molde.
+- Vista ampliada de tablas con búsqueda por filas.
+- Búsqueda global indexa texto de celdas y referencias multimedia.

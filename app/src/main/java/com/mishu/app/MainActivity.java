@@ -3,6 +3,7 @@ package com.mishu.app;
 import android.app.Activity;
 import android.util.Log;
 import android.os.Bundle;
+import android.content.res.Configuration;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -84,5 +85,6 @@ public class MainActivity extends Activity {
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==PICK_FILE&&fileCallback!=null){Uri[] result=WebChromeClient.FileChooserParams.parseResult(resultCode,data);fileCallback.onReceiveValue(result);fileCallback=null;}}
  class Bridge{@JavascriptInterface public void save(String json){storage.save(json);}}
  @Override public void onBackPressed(){web.evaluateJavascript("if(document.querySelector('dialog[open]'))closeModal();else back();",null);}
+ @Override public void onConfigurationChanged(Configuration newConfig){super.onConfigurationChanged(newConfig); /* Keep the current WebView and note visible across rotation. */}
  @Override protected void onDestroy(){if(web!=null)web.destroy();storage.close();super.onDestroy();}
 }

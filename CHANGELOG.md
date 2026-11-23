@@ -169,3 +169,6 @@ Sincronización, vinculación entre dispositivos y botón de nube eliminados. Se
 
 
 Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista offline de jerarquías con conexiones, colores y fuentes del estilo activo, zoom, impresión y traducción inglés/español.
+
+## 4.23
+- Traducciones EN/ES para selector de carpeta Mishu y estado de conexion, incluso al cambiar idioma.

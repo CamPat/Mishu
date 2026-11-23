@@ -493,17 +493,24 @@ async function selectMishuFolder(){
   queueMishuFolderSave();updateMishuFolderStatus();
  }catch(e){if(e.name!=='AbortError')alert('No se pudo abrir la carpeta: '+e.message)}
 }
-function updateMishuFolderStatus(){const el=$('mishuFolderStatus');if(el)el.textContent=mishuFolderHandle?'Carpeta Mishu conectada':'Carpeta Mishu no conectada'}
+function updateMishuFolderStatus(){
+ const english=db?.language==='en';
+ const button=document.getElementById('mishuFolderSelectButton');
+ if(button)button.textContent=english?'Select Mishu folder':'Seleccionar carpeta Mishu';
+ const el=$('mishuFolderStatus');
+ if(el)el.textContent=mishuFolderHandle?(english?'Mishu folder connected':'Carpeta Mishu conectada'):(english?'Mishu folder not connected':'Carpeta Mishu no conectada');
+}
 function queueMishuFolderSave(){if(!mishuFolderHandle)return;mishuWritePending=JSON.stringify(db);if(!mishuWriteActive)void drainMishuFolderSave()}
 async function drainMishuFolderSave(){mishuWriteActive=true;try{while(mishuWritePending!==null){const payload=mishuWritePending;mishuWritePending=null;const file=await mishuFolderHandle.getFileHandle('autosave.json',{create:true});const writable=await file.createWritable();await writable.write(payload);await writable.close()}}catch(e){console.error('Mishu folder autosave failed',e);alert('Error al guardar en la carpeta Mishu: '+e.message)}finally{mishuWriteActive=false;if(mishuWritePending!==null)void drainMishuFolderSave()}}
 const mishuOriginalSave=save;save=function(){mishuOriginalSave();queueMishuFolderSave()};
 function setupBrowserFolderAccess(){if(window.MishuNative||window.pywebview||!window.showDirectoryPicker)return;
  const bar=document.createElement('div');bar.id='mishuBrowserFolderBar';bar.style.cssText='padding:8px 12px;background:#f3eaf8;display:flex;align-items:center;gap:10px;flex-wrap:wrap';
- bar.innerHTML='<button type="button" onclick="selectMishuFolder()">Seleccionar carpeta Mishu</button><span id="mishuFolderStatus">Carpeta Mishu no conectada</span>';
+ bar.innerHTML='<button id="mishuFolderSelectButton" type="button" onclick="selectMishuFolder()"></button><span id="mishuFolderStatus"></span>';
  document.querySelector('header')?.after(bar);
+ updateMishuFolderStatus();
 }
 
-const oldRender=render;render=function(){oldRender();translateUI();sizeAllEntries()};
+const oldRender=render;render=function(){oldRender();translateUI();updateMishuFolderStatus();sizeAllEntries()};
 const oldModal=modal;modal=function(html){oldModal(html);translateUI()};
 const oldPop=pop;pop=function(html){oldPop(html);translateUI()};
 

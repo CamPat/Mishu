@@ -192,3 +192,8 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Moldes conservan tablas, combinaciones, colores, tamaños y multimedia; regeneración de IDs de tablas al aplicar molde.
 - Vista ampliada de tablas con búsqueda por filas.
 - Búsqueda global indexa texto de celdas y referencias multimedia.
+
+## 4.31 — Corrección de exportación PDF
+- Android: impresión nativa mediante PrintManager y WebView dedicada, compatible con Guardar como PDF.
+- Vista previa de notas y diagramas: botón Exportar/Guardar PDF utiliza impresión nativa en Android; en navegador conserva window.print().
+- Se aplica A4 vertical a notas y orientación seleccionada a diagramas.

@@ -5,6 +5,9 @@ import android.util.Log;
 import android.os.Bundle;
 import android.content.res.Configuration;
 import android.view.WindowManager;
+import android.print.PrintManager;
+import android.print.PrintAttributes;
+import android.content.Context;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
@@ -28,6 +31,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends Activity {
  private WebView web;
+ private WebView pdfPrintWeb;
  private Storage storage;
  private ValueCallback<Uri[]> fileCallback;
  private String pendingExternalFile=null;
@@ -83,8 +87,38 @@ public class MainActivity extends Activity {
  private void deliverExternalFile(){if(!pageReady||pendingExternalFile==null)return;String data=pendingExternalFile;pendingExternalFile=null;web.evaluateJavascript("window.mishuOpenExternal("+JSONObject.quote(data)+")",null);}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);pendingExternalFile=readMishuIntent(intent);deliverExternalFile();}
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==PICK_FILE&&fileCallback!=null){Uri[] result=WebChromeClient.FileChooserParams.parseResult(resultCode,data);fileCallback.onReceiveValue(result);fileCallback=null;}}
- class Bridge{@JavascriptInterface public void save(String json){storage.save(json);}}
+ private void printPdfHtml(String html,String title,String orientation){
+  if(html==null||html.isEmpty()||html.length()>8*1024*1024)return;
+  runOnUiThread(()->{
+   try{
+    if(pdfPrintWeb!=null){pdfPrintWeb.destroy();pdfPrintWeb=null;}
+    final WebView printView=new WebView(this);
+    pdfPrintWeb=printView;
+    printView.getSettings().setJavaScriptEnabled(false);
+    printView.getSettings().setDomStorageEnabled(false);
+    printView.setWebViewClient(new WebViewClient(){
+     private boolean started=false;
+     @Override public void onPageFinished(WebView view,String url){
+      if(started)return;started=true;
+      view.postDelayed(()->{
+       try{
+        PrintManager manager=(PrintManager)getSystemService(Context.PRINT_SERVICE);
+        PrintAttributes.MediaSize media="landscape".equals(orientation)?PrintAttributes.MediaSize.ISO_A4.asLandscape():PrintAttributes.MediaSize.ISO_A4.asPortrait();
+        PrintAttributes attrs=new PrintAttributes.Builder().setMediaSize(media).setResolution(new PrintAttributes.Resolution("pdf","PDF",300,300)).setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
+        manager.print(title==null?"Mishu PDF":title,view.createPrintDocumentAdapter(title==null?"Mishu PDF":title),attrs);
+       }catch(Exception e){Log.e("Mishu","PDF printing failed",e);}
+      },400);
+     }
+    });
+    printView.loadDataWithBaseURL("https://appassets.androidplatform.net/",html,"text/html","UTF-8",null);
+   }catch(Exception e){Log.e("Mishu","PDF preview failed",e);}
+  });
+ }
+ class Bridge{
+  @JavascriptInterface public void save(String json){storage.save(json);}
+  @JavascriptInterface public void printHtml(String html,String title,String orientation){printPdfHtml(html,title,orientation);}
+ }
  @Override public void onBackPressed(){web.evaluateJavascript("if(document.querySelector('dialog[open]'))closeModal();else back();",null);}
  @Override public void onConfigurationChanged(Configuration newConfig){super.onConfigurationChanged(newConfig); /* Keep the current WebView and note visible across rotation. */}
- @Override protected void onDestroy(){if(web!=null)web.destroy();storage.close();super.onDestroy();}
+ @Override protected void onDestroy(){if(web!=null)web.destroy();if(pdfPrintWeb!=null)pdfPrintWeb.destroy();storage.close();super.onDestroy();}
 }

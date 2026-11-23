@@ -107,6 +107,26 @@ function autoSizeEntry(el){if(!el)return;el.style.height="auto";el.style.height=
 function syncEditMirror(el){const id=el.closest('[data-node]')?.dataset.node,n=id&&locate(id),mirror=el.parentElement?.querySelector('.edit-text-mirror');if(!n||!mirror)return;mirror.innerHTML=renderMarkedText({...n,content:el.value},false);mirror.style.minHeight=el.offsetHeight+'px'}
 let nodeTitleTimers={};
 function autoSizeNodeTitle(el){if(!el)return;el.style.height='auto';el.style.height=Math.max(27,el.scrollHeight)+'px'}
+function mishuTitleToContent(id,el){
+ if(study)return;
+ const cut=el.value.indexOf('<');
+ if(cut<0){autoSizeNodeTitle(el);debouncedNodeTitle(id,el.value);return}
+ const n=locate(id);if(!n)return;
+ const title=el.value.slice(0,cut).trimEnd();
+ const extra=el.value.slice(cut+1).replace(/^\s+/, '');
+ clearTimeout(nodeTitleTimers[id]);
+ // Everything after < is content, never a new topic or child.
+ n.title=title;
+ n.content=extra+(n.content?('\n'+n.content):'');
+ n.open=true;
+ findNote(current).updated=now();save();render();
+ const text=document.querySelector(`[data-node="${id}"] .node-content`);
+ if(text){text.focus();text.setSelectionRange(extra.length,extra.length)}
+}
+function mishuTitleCommit(id,el){
+ if(el.value.includes('<'))mishuTitleToContent(id,el);
+ else editNode(id,'title',el.value);
+}
 function debouncedNodeTitle(id,value){clearTimeout(nodeTitleTimers[id]);nodeTitleTimers[id]=setTimeout(()=>{const n=locate(id);if(n&&n.title!==value){n.title=value;save()}},350)}
 function sizeAllEntries(){document.querySelectorAll("textarea.node-content").forEach(autoSizeEntry);document.querySelectorAll("textarea.node-title-input").forEach(autoSizeNodeTitle)}
 
@@ -314,7 +334,7 @@ function deleteNodeTable(nodeId,tableId){
  mutate(()=>{n.tables=(n.tables||[]).filter(t=>t.id!==tableId);findNote(current).updated=now()});
 }
 
-function renderNodes(nodes,noteId){return nodes.map(n=>`<div class="node" data-node="${n.id}" data-has-content="${Boolean(n.content?.trim())}"><div class="node-row"><button class="icon" onclick="toggleNode('${n.id}')">${n.open===false?'+':'−'}</button><textarea class="node-title-input" rows="1" aria-label="Título de tema" ${study?'readonly tabindex="-1"':''} oninput="autoSizeNodeTitle(this);debouncedNodeTitle('${n.id}',this.value)" onchange="editNode('${n.id}','title',this.value)" onmouseup="captureSelection(this)" onpointerup="setTimeout(()=>captureSelection(this),30)" onkeyup="captureSelection(this)" onselect="captureSelection(this)" ontouchend="setTimeout(()=>captureSelection(this),100)">${esc(n.title)}</textarea>${study?'':`<button onclick="nodeActions('${n.id}',this)">⋯</button>`}</div><div class="${n.open===false?'hidden':''}">${study?`<div class="study-text" aria-label="Contenido de estudio">${renderMarkedText(n,true)}</div>`:`<div class="edit-text-wrap"><div class="edit-text-mirror" aria-hidden="true">${renderMarkedText(n,false)}</div><textarea class="node-content" ${study?'readonly':''} aria-label="Contenido" oninput="autoSizeEntry(this);debouncedEdit('${n.id}',this.value);syncEditMirror(this)" onmouseup="captureSelection(this)" onpointerup="setTimeout(()=>captureSelection(this),30)" onkeyup="captureSelection(this)" onselect="captureSelection(this)" ontouchend="setTimeout(()=>captureSelection(this),100)">${esc(n.content)}</textarea></div>`}${renderNodeTables(n)}${flowPreview(n)}${study?'':`<div class="toolbar"><button onclick="addChild('${n.id}')">＋ Subtema</button><button onclick="addNodeTable('${n.id}')">${tableLabel('＋ Tabla','＋ Table')}</button><button onclick="flowAdd('${n.id}')">${flowL('＋ Diagrama de flujo','＋ Flowchart')}</button></div>`}${n.media?.length?`<div class="media">${n.media.map(m=>renderMedia(m,n.id)).join('')}</div>`:''}<div class="children">${renderNodes(n.children||[],noteId)}</div></div></div>`).join('')}
+function renderNodes(nodes,noteId){return nodes.map(n=>`<div class="node" data-node="${n.id}" data-has-content="${Boolean(n.content?.trim())}"><div class="node-row"><button class="icon" onclick="toggleNode('${n.id}')">${n.open===false?'+':'−'}</button><textarea class="node-title-input" rows="1" aria-label="Título de tema" ${study?'readonly tabindex="-1"':''} oninput="mishuTitleToContent('${n.id}',this)" onchange="mishuTitleCommit('${n.id}',this)" onmouseup="captureSelection(this)" onpointerup="setTimeout(()=>captureSelection(this),30)" onkeyup="captureSelection(this)" onselect="captureSelection(this)" ontouchend="setTimeout(()=>captureSelection(this),100)">${esc(n.title)}</textarea>${study?'':`<button onclick="nodeActions('${n.id}',this)">⋯</button>`}</div><div class="${n.open===false?'hidden':''}">${study?`<div class="study-text" aria-label="Contenido de estudio">${renderMarkedText(n,true)}</div>`:`<div class="edit-text-wrap"><div class="edit-text-mirror" aria-hidden="true">${renderMarkedText(n,false)}</div><textarea class="node-content" ${study?'readonly':''} aria-label="Contenido" oninput="autoSizeEntry(this);debouncedEdit('${n.id}',this.value);syncEditMirror(this)" onmouseup="captureSelection(this)" onpointerup="setTimeout(()=>captureSelection(this),30)" onkeyup="captureSelection(this)" onselect="captureSelection(this)" ontouchend="setTimeout(()=>captureSelection(this),100)">${esc(n.content)}</textarea></div>`}${renderNodeTables(n)}${flowPreview(n)}${study?'':`<div class="toolbar"><button onclick="addChild('${n.id}')">＋ Subtema</button><button onclick="addNodeTable('${n.id}')">${tableLabel('＋ Tabla','＋ Table')}</button><button onclick="flowAdd('${n.id}')">${flowL('＋ Diagrama de flujo','＋ Flowchart')}</button></div>`}${n.media?.length?`<div class="media">${n.media.map(m=>renderMedia(m,n.id)).join('')}</div>`:''}<div class="children">${renderNodes(n.children||[],noteId)}</div></div></div>`).join('')}
 function mediaURL(raw,type){try{const u=new URL(raw);if(u.protocol!=='https:')return '';if(u.hostname==='drive.google.com'||u.hostname==='www.drive.google.com'){let match=u.pathname.match(/\/file\/d\/([\w-]+)/);let id=match?.[1]||u.searchParams.get('id');if(id)return type==='image'?'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1200':'https://drive.google.com/file/d/'+encodeURIComponent(id)+'/preview'}return u.href}catch{return ''}}
 function videoSource(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return null;const host=u.hostname.toLowerCase().replace(/^www\./,'');let id='';if(host==='youtube.com'||host==='m.youtube.com'||host==='youtube-nocookie.com'){id=u.searchParams.get('v')||u.pathname.match(/^\/(?:shorts|embed|live)\/([\w-]+)/)?.[1]||'';if(/^[\w-]{11}$/.test(id))return {kind:'embed',url:'https://www.youtube-nocookie.com/embed/'+id+'?playsinline=1'}}if(host==='youtu.be'){id=u.pathname.split('/')[1]||'';if(/^[\w-]{11}$/.test(id))return {kind:'embed',url:'https://www.youtube-nocookie.com/embed/'+id+'?playsinline=1'}}if(host==='drive.google.com'){let match=u.pathname.match(/\/file\/d\/([\w-]+)/);id=match?.[1]||u.searchParams.get('id');if(id)return {kind:'embed',url:'https://drive.google.com/file/d/'+encodeURIComponent(id)+'/preview'}}if(host==='vimeo.com'){id=u.pathname.match(/^\/(\d+)/)?.[1];if(id)return {kind:'embed',url:'https://player.vimeo.com/video/'+id}}if(/\.(mp4|webm|ogv)(?:$|[?#])/i.test(u.href))return {kind:'file',url:u.href};return {kind:'external',url:u.href}}catch{return null}}
 function videoPlayer(raw,expanded=false){const source=videoSource(raw),safe=esc(source?.url||'');if(!source)return '<p>Enlace de video no válido.</p>';let media=source.kind==='file'?`<video controls playsinline preload="metadata" style="display:block;width:100%;max-height:${expanded?'70vh':'360px'};background:#111;border-radius:12px" src="${safe}"></video>`:source.kind==='embed'?`<iframe title="Reproductor de video" loading="lazy" src="${safe}" style="display:block;width:100%;height:${expanded?'65vh':'260px'};border:0;border-radius:12px;background:#111" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>`:'<p>Este proveedor no admite una vista integrada conocida.</p>';return `<div class="mishu-video">${media}<p style="margin:8px 0"><a href="${esc(raw)}" target="_blank" rel="noopener noreferrer">Abrir video externamente si no se reproduce</a></p></div>`}
@@ -550,13 +570,62 @@ function removeNoteLink(id){mutate(()=>{const n=findNote(current);n.links=mishuL
 
 // Mishu flow diagrams: standalone editable diagrams embedded in note topics.
 let flowSession=null;
+
+// Numbered-box automatic flowchart layout. Numbers remain stable after deletions.
+function flowNumber(d,n){return n.number||d.nodes.indexOf(n)+1}
+function flowNormalize(d){d.nodes||=[];d.edges||=[];let used=new Set();d.nodes.forEach((n,i)=>{let num=Number(n.number);if(!Number.isInteger(num)||num<1||used.has(num)){num=1;while(used.has(num))num++}n.number=num;used.add(num);n.shape='rect'});}
+function flowNextNumber(d){const taken=new Set(d.nodes.map(n=>n.number));let i=1;while(taken.has(i))i++;return i}
+function flowAutoLayout(d){
+ flowNormalize(d);const nodes=d.nodes, edges=d.edges.filter(e=>nodes.some(n=>n.id===e.from)&&nodes.some(n=>n.id===e.to)&&e.from!==e.to);
+ if(!nodes.length)return;
+ const ids=new Map(nodes.map(n=>[n.id,n]));const incoming=new Map(nodes.map(n=>[n.id,[]]));const outgoing=new Map(nodes.map(n=>[n.id,[]]));
+ edges.forEach(e=>{incoming.get(e.to).push(e.from);outgoing.get(e.from).push(e.to)});
+ // Assign levels using breadth-first search; cyclic/back edges do not cause infinite loops.
+ const level=new Map(), roots=nodes.filter(n=>incoming.get(n.id).length===0).sort((a,b)=>a.number-b.number);
+ const queue=[];for(const n of roots){level.set(n.id,0);queue.push(n.id)}
+ if(!queue.length){const n=[...nodes].sort((a,b)=>a.number-b.number)[0];level.set(n.id,0);queue.push(n.id)}
+ for(let q=0;q<queue.length;q++){const id=queue[q];for(const next of outgoing.get(id)){if(!level.has(next)){level.set(next,level.get(id)+1);queue.push(next)}}}
+ for(const n of [...nodes].sort((a,b)=>a.number-b.number))if(!level.has(n.id)){level.set(n.id,Math.max(0,...level.values())+1);queue.push(n.id)}
+ // Barycentric ordering reduces crossing for layered directed graphs.
+ const layers=[];for(const n of nodes)(layers[level.get(n.id)]||= []).push(n);
+ layers.forEach(a=>a?.sort((a,b)=>a.number-b.number));
+ for(let pass=0;pass<6;pass++){
+  for(let l=1;l<layers.length;l++){const prior=new Map((layers[l-1]||[]).map((n,i)=>[n.id,i]));layers[l]?.sort((a,b)=>{const avg=n=>{const p=incoming.get(n.id).filter(id=>prior.has(id));return p.length?p.reduce((s,id)=>s+prior.get(id),0)/p.length:1e6+n.number};return avg(a)-avg(b)||a.number-b.number})}
+  for(let l=layers.length-2;l>=0;l--){const next=new Map((layers[l+1]||[]).map((n,i)=>[n.id,i]));layers[l]?.sort((a,b)=>{const avg=n=>{const p=outgoing.get(n.id).filter(id=>next.has(id));return p.length?p.reduce((s,id)=>s+next.get(id),0)/p.length:1e6+n.number};return avg(a)-avg(b)||a.number-b.number})}
+ }
+ const cols=Math.max(1,Math.max(...layers.map(a=>a?.length||0))),rows=layers.length;
+ const gapX=18,gapY=40,margin=28;
+ const boxW=Math.max(90,Math.min(220,(1000-margin*2-(cols-1)*gapX)/cols));
+ const boxH=Math.max(45,Math.min(100,(700-margin*2-(rows-1)*gapY)/rows));
+ layers.forEach((arr,l)=>{if(!arr)return;const total=arr.length*boxW+(arr.length-1)*gapX;const left=(1000-total)/2;arr.forEach((n,i)=>{n.x=Math.round(left+i*(boxW+gapX));n.y=Math.round(margin+l*(boxH+gapY));n.w=Math.round(boxW);n.h=Math.round(boxH);n.fontSize=Math.max(10,Math.min(Number(n.fontSize)||18,Math.floor(boxW/10),Math.floor(boxH/3)));n.shape='rect'})});
+ d.autoLayout=true;
+}
+function flowConnectionType(d,e){const a=d.nodes.find(n=>n.id===e.from),b=d.nodes.find(n=>n.id===e.to);return !a||!b?'':`#${a.number} → #${b.number}`}
+function flowParseNumbers(raw){return [...new Set(String(raw||'').split(/[,;\s]+/).map(x=>Number(x.trim())).filter(x=>Number.isInteger(x)&&x>0))]}
+function flowAddConnections(){const s=flowSession,d=flowDiagram(s?.nodeId,s?.id);if(!d)return;
+ const source=Number(document.getElementById('flow-connect-source')?.value),targets=flowParseNumbers(document.getElementById('flow-connect-targets')?.value),relation=document.getElementById('flow-connect-kind')?.value||'child',direction=document.getElementById('flow-connect-direction')?.value||'forward';
+ const base=d.nodes.find(n=>n.number===source);if(!base||!targets.length){alert(flowL('Selecciona un cuadro y escribe los números de destino.','Select a box and enter target numbers.'));return}
+ const additions=[];for(const number of targets){const other=d.nodes.find(n=>n.number===number);if(!other||other.id===base.id)continue;
+ let from=relation==='parent'?other.id:base.id,to=relation==='parent'?base.id:other.id;
+ if(relation==='sibling'){from=base.id;to=other.id}
+ if(direction==='reverse')[from,to]=[to,from];
+ if(direction==='none')continue;
+ additions.push([from,to]);if(direction==='both')additions.push([to,from]);
+ }
+ additions.forEach(([from,to])=>{if(!d.edges.some(e=>e.from===from&&e.to===to))d.edges.push({id:uid(),from,to,style:'orthogonal'})});
+ flowAutoLayout(d);flowSave();flowRender();
+}
+function flowDeleteNumber(number){const s=flowSession,d=flowDiagram(s?.nodeId,s?.id);if(!d)return;const n=d.nodes.find(n=>n.number===number);if(!n)return;if(!confirm(flowL('¿Eliminar el cuadro y sus conexiones?','Delete the box and its connections?')))return;d.nodes=d.nodes.filter(x=>x.id!==n.id);d.edges=d.edges.filter(e=>e.from!==n.id&&e.to!==n.id);s.selected=d.nodes[0]?.id||null;flowAutoLayout(d);flowSave();flowRender()}
+function flowSetNumberText(number,value){const s=flowSession,d=flowDiagram(s?.nodeId,s?.id);const n=d?.nodes.find(n=>n.number===number);if(!n)return;n.text=value;flowAutoLayout(d);flowSave();const stage=document.getElementById('flow-stage');if(stage)stage.innerHTML=flowSVG(d,true);}
+function flowLayoutNow(){const s=flowSession,d=flowDiagram(s?.nodeId,s?.id);if(!d)return;flowAutoLayout(d);flowSave();flowRender()}
+
 const flowL=(es,en)=>db.language==='en'?en:es;
 const flowClamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 function flowDiagram(nodeId,id){return (locate(nodeId)?.diagrams||[]).find(d=>d.id===id)}
 function flowAdd(nodeId){
  if(study)return;flushEdits();const n=locate(nodeId);if(!n)return;
- const d={id:uid(),title:flowL('Diagrama de flujo','Flowchart'),orientation:'landscape',nodes:[{id:uid(),x:390,y:280,w:220,h:90,text:flowL('Inicio','Start'),shape:'round',fontSize:22,bold:true,italic:false,align:'center',color:'#ffffff',textColor:'#292332'}],edges:[]};
- mutate(()=>{n.diagrams||=[];n.diagrams.push(d);findNote(current).updated=now()});flowOpen(nodeId,d.id);
+ const d={id:uid(),title:flowL('Diagrama de flujo','Flowchart'),orientation:'landscape',nodes:[{id:uid(),x:390,y:280,w:220,h:90,text:flowL('Inicio','Start'),shape:'rect',number:1,fontSize:22,bold:true,italic:false,align:'center',color:'#ffffff',textColor:'#292332'}],edges:[]};
+ flowAutoLayout(d);mutate(()=>{n.diagrams||=[];n.diagrams.push(d);findNote(current).updated=now()});flowOpen(nodeId,d.id);
 }
 function flowRemove(nodeId,id){if(!confirm(flowL('¿Eliminar diagrama?','Delete diagram?')))return;mutate(()=>{const n=locate(nodeId);n.diagrams=(n.diagrams||[]).filter(d=>d.id!==id);findNote(current).updated=now()})}
 function flowTextLines(text,w,font){
@@ -565,18 +634,18 @@ function flowTextLines(text,w,font){
  return lines.slice(0,18);
 }
 function flowSVG(d,interactive=false){
- const nodes=d.nodes||[], edges=d.edges||[],byId=new Map(nodes.map(n=>[n.id,n]));
+ flowNormalize(d);const nodes=d.nodes||[], edges=d.edges||[],byId=new Map(nodes.map(n=>[n.id,n]));
  const arrow=`<defs><marker id="mishu-flow-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0 L8 3 L0 6 Z" fill="#74548e"/></marker></defs>`;
  const links=edges.map(e=>{const a=byId.get(e.from),b=byId.get(e.to);if(!a||!b)return '';
  const ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay;
  let x1,y1,x2,y2;if(Math.abs(dx)/(a.w+b.w)>Math.abs(dy)/(a.h+b.h)){x1=ax+Math.sign(dx)*a.w/2;y1=ay;x2=bx-Math.sign(dx)*b.w/2;y2=by}else{x1=ax;y1=ay+Math.sign(dy)*a.h/2;x2=bx;y2=by-Math.sign(dy)*b.h/2}
  const midX=(x1+x2)/2,midY=(y1+y2)/2;
- const curve=e.style==='curve'?`M${x1},${y1} Q${midX+Math.min(70,Math.abs(y2-y1)/2)},${midY} ${x2},${y2}`:`M${x1},${y1} L${x2},${y2}`;
+ const curve=e.style==='orthogonal'?`M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`:e.style==='curve'?`M${x1},${y1} Q${midX+Math.min(70,Math.abs(y2-y1)/2)},${midY} ${x2},${y2}`:`M${x1},${y1} L${x2},${y2}`;
  return `<path d="${curve}" fill="none" stroke="#74548e" stroke-width="3" marker-end="url(#mishu-flow-arrow)"/>`}).join('');
  const shapes=nodes.map(n=>{const fs=flowClamp(Number(n.fontSize)||20,10,40),w=flowClamp(Number(n.w)||200,90,650),h=flowClamp(Number(n.h)||85,45,300),x=Number(n.x)||0,y=Number(n.y)||0;
  const color=/^#[0-9a-f]{6}$/i.test(n.color||'')?n.color:'#ffffff',tc=/^#[0-9a-f]{6}$/i.test(n.textColor||'')?n.textColor:'#292332';
  const tag=n.shape==='diamond'?`<polygon points="${x+w/2},${y} ${x+w},${y+h/2} ${x+w/2},${y+h} ${x},${y+h/2}" fill="${color}" stroke="#74548e" stroke-width="2"/>`:n.shape==='ellipse'?`<ellipse cx="${x+w/2}" cy="${y+h/2}" rx="${w/2}" ry="${h/2}" fill="${color}" stroke="#74548e" stroke-width="2"/>`:`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${n.shape==='round'?Math.min(28,h/3):2}" fill="${color}" stroke="#74548e" stroke-width="2"/>`;
- const lines=flowTextLines(n.text,w*(n.shape==='diamond'?.65:.9),fs),step=fs*1.16,total=lines.length*step;
+ const lines=flowTextLines('#'+n.number+'  '+n.text,w*(n.shape==='diamond'?.65:.9),fs),step=fs*1.16,total=lines.length*step;
  const tx=n.align==='left'?x+w*.16:n.align==='right'?x+w*.84:x+w/2,anchor=n.align==='left'?'start':n.align==='right'?'end':'middle';
  const text=lines.map((line,i)=>`<text x="${tx}" y="${y+h/2-total/2+(i+.82)*step}" font-family="Arial,sans-serif" font-size="${fs}" font-weight="${n.bold?'700':'400'}" font-style="${n.italic?'italic':'normal'}" fill="${tc}" text-anchor="${anchor}">${esc(line)}</text>`).join('');
  return `<g ${interactive?`data-flow-node="${n.id}" style="cursor:grab;touch-action:none"`:''}>${tag}${text}</g>`}).join('');
@@ -585,15 +654,15 @@ function flowSVG(d,interactive=false){
 function flowPreview(n){return (n.diagrams||[]).map(d=>`<section class="mishu-flow-preview"><div class="mishu-flow-preview-head"><strong>${esc(d.title)}</strong>${study?'':`<button onclick="flowOpen('${n.id}','${d.id}')">${flowL('Editar diagrama','Edit flowchart')}</button><button onclick="flowRemove('${n.id}','${d.id}')">${flowL('Eliminar','Delete')}</button>`}</div>${flowSVG(d)}</section>`).join('')}
 function flowOpen(nodeId,id){
  if(study)return;flushEdits();const d=flowDiagram(nodeId,id);if(!d)return;
- flowClose();flowSession={nodeId,id,selected:d.nodes[0]?.id||null,linkFrom:null,drag:null};
+ flowClose();flowNormalize(d);if(d.autoLayout!==false)flowAutoLayout(d);flowSession={nodeId,id,selected:d.nodes[0]?.id||null,linkFrom:null,drag:null};
  const overlay=document.createElement('section');overlay.id='mishu-flow-editor';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
- overlay.innerHTML=`<header class="flow-head"><strong>${flowL('Editor de diagrama de flujo','Flowchart editor')}</strong><button onclick="flowAddBubble()">＋ ${flowL('Burbuja','Node')}</button><button onclick="flowStartLink()">➜ ${flowL('Flecha','Arrow')}</button><button onclick="flowDeleteSelected()">${flowL('Eliminar burbuja','Delete node')}</button><button onclick="flowExportPDF()">PDF A4</button><button onclick="flowClose()">✕ ${flowL('Cerrar','Close')}</button></header><div class="flow-work"><div class="flow-stage" id="flow-stage"></div><aside id="flow-props"></aside></div>`;
+ overlay.innerHTML=`<header class="flow-head"><strong>${flowL('Editor de diagrama de flujo','Flowchart editor')}</strong><button onclick="flowAddBubble()">＋ ${flowL('Cuadro','Box')}</button><button onclick="flowLayoutNow()">${flowL('Ordenar automáticamente','Auto arrange')}</button><button onclick="flowDeleteSelected()">${flowL('Eliminar burbuja','Delete node')}</button><button onclick="flowExportPDF()">PDF A4</button><button onclick="flowClose()">✕ ${flowL('Cerrar','Close')}</button></header><div class="flow-work" style="display:flex;flex-direction:column;overflow:auto"><div id="flow-box-list"></div><div class="flow-stage" id="flow-stage" style="min-height:300px;flex-shrink:0"></div><div id="flow-connections"></div><aside id="flow-props"></aside></div>`;
  document.body.appendChild(overlay);document.body.style.overflow='hidden';flowRender();
 }
 function flowClose(){document.getElementById('mishu-flow-editor')?.remove();document.body.style.overflow='';flowSession=null}
 function flowSave(){const s=flowSession;if(!s)return;const d=flowDiagram(s.nodeId,s.id);if(!d)return;findNote(current).updated=now();save()}
 function flowRender(){const s=flowSession;if(!s)return;const d=flowDiagram(s.nodeId,s.id);if(!d)return;
- const stage=document.getElementById('flow-stage');if(!stage)return;stage.innerHTML=flowSVG(d,true);const svg=stage.querySelector('svg');
+ const stage=document.getElementById('flow-stage');if(!stage)return;flowLists();stage.innerHTML=flowSVG(d,true);const svg=stage.querySelector('svg');
  svg.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-flow-node]');if(!el)return;const id=el.dataset.flowNode;
  if(s.linkFrom){if(s.linkFrom!==id){d.edges.push({id:uid(),from:s.linkFrom,to:id,style:'straight'});flowSave()}s.linkFrom=null;s.selected=id;flowRender();return}
  s.selected=id;const n=d.nodes.find(x=>x.id===id),pt=flowPoint(svg,e);s.drag={id,startX:pt.x,startY:pt.y,x:n.x,y:n.y,pointerId:e.pointerId};stage.setPointerCapture(e.pointerId);flowProps()});
@@ -603,14 +672,20 @@ function flowRender(){const s=flowSession;if(!s)return;const d=flowDiagram(s.nod
  flowProps();
 }
 function flowPoint(svg,e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();return m?p.matrixTransform(m.inverse()):{x:0,y:0}}
-function flowAddBubble(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;const n={id:uid(),x:flowClamp(80+d.nodes.length*35,0,780),y:flowClamp(70+d.nodes.length*35,0,600),w:210,h:85,text:flowL('Nuevo paso','New step'),shape:'round',fontSize:20,bold:false,italic:false,align:'center',color:'#ffffff',textColor:'#292332'};d.nodes.push(n);s.selected=n.id;flowSave();flowRender()}
+function flowAddBubble(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;const n={id:uid(),number:flowNextNumber(d),x:0,y:0,w:210,h:85,text:flowL('Nuevo paso','New step'),shape:'rect',fontSize:20,bold:false,italic:false,align:'center',color:'#ffffff',textColor:'#292332'};d.nodes.push(n);s.selected=n.id;flowAutoLayout(d);flowSave();flowRender()}
 function flowStartLink(){const s=flowSession;if(!s?.selected){alert(flowL('Selecciona una burbuja de origen','Select a source node'));return}s.linkFrom=s.selected;alert(flowL('Pulsa la burbuja de destino. Puedes crear varias flechas de entrada y salida.','Click the target node. Multiple incoming and outgoing arrows are supported.'))}
-function flowDeleteSelected(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d||!s.selected)return;d.nodes=d.nodes.filter(n=>n.id!==s.selected);d.edges=d.edges.filter(e=>e.from!==s.selected&&e.to!==s.selected);s.selected=d.nodes[0]?.id||null;flowSave();flowRender()}
+function flowDeleteSelected(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d||!s.selected)return;d.nodes=d.nodes.filter(n=>n.id!==s.selected);d.edges=d.edges.filter(e=>e.from!==s.selected&&e.to!==s.selected);s.selected=d.nodes[0]?.id||null;flowAutoLayout(d);flowSave();flowRender()}
 function flowSet(key,value){const s=flowSession,d=flowDiagram(s.nodeId,s.id),n=d?.nodes.find(x=>x.id===s.selected);if(!n)return;
  if(['x','y','w','h','fontSize'].includes(key)){value=Number(value);if(!Number.isFinite(value))return;value=flowClamp(value,key==='fontSize'?10:key==='w'?90:key==='h'?45:0,key==='fontSize'?40:key==='w'?650:key==='h'?300:key==='x'?1000-n.w:700-n.h)}
- n[key]=value;flowSave();flowRender()}
+ n[key]=value;if(key==='text')flowAutoLayout(d);flowSave();flowRender()}
 function flowSetDiagram(key,value){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;d[key]=value;flowSave();flowRender()}
-function flowRemoveEdge(id){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;d.edges=d.edges.filter(e=>e.id!==id);flowSave();flowRender()}
+function flowRemoveEdge(id){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;d.edges=d.edges.filter(e=>e.id!==id);flowAutoLayout(d);flowSave();flowRender()}
+function flowLists(){
+ const s=flowSession,d=flowDiagram(s?.nodeId,s?.id);if(!d)return;
+ const list=document.getElementById('flow-box-list'),conn=document.getElementById('flow-connections');
+ if(list)list.innerHTML=`<h3>${flowL('Cuadros','Boxes')} <button onclick="flowAddBubble()">＋ ${flowL('Añadir cuadro','Add box')}</button></h3><div style="display:flex;flex-wrap:wrap;gap:10px">${[...d.nodes].sort((a,b)=>a.number-b.number).map(n=>`<label style="min-width:200px;flex:1;max-width:350px"><strong>#${n.number}</strong><textarea rows="2" onchange="flowSetNumberText(${n.number},this.value)">${esc(n.text)}</textarea><button onclick="flowDeleteNumber(${n.number})">${flowL('Eliminar','Delete')} #${n.number}</button></label>`).join('')}</div>`;
+ if(conn)conn.innerHTML=`<h3>${flowL('Conexiones','Connections')} <button onclick="flowAddConnections()">＋ ${flowL('Añadir conexiones','Add connections')}</button></h3><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:end"><label>${flowL('Cuadro inicial','Starting box')}<select id="flow-connect-source">${[...d.nodes].sort((a,b)=>a.number-b.number).map(n=>`<option value="${n.number}">#${n.number}</option>`).join('')}</select></label><label>${flowL('Relación','Relationship')}<select id="flow-connect-kind"><option value="child">${flowL('Hijo','Child')}</option><option value="parent">${flowL('Padre','Parent')}</option><option value="sibling">${flowL('Hermano','Sibling')}</option></select></label><label>${flowL('Números separados por comas','Comma-separated numbers')}<input id="flow-connect-targets" placeholder="2,3,4"></label><label>${flowL('Dirección de flecha','Arrow direction')}<select id="flow-connect-direction"><option value="forward">→</option><option value="reverse">←</option><option value="both">↔</option><option value="none">${flowL('Sin flecha','No arrow')}</option></select></label></div><p>${d.edges.map(e=>`<span style="display:inline-block;margin:4px;padding:5px;border:1px solid #aaa;border-radius:5px">${esc(flowConnectionType(d,e))} <button onclick="flowRemoveEdge('${e.id}')">✕</button></span>`).join('')}</p>`;
+}
 function flowProps(){const s=flowSession,d=flowDiagram(s.nodeId,s.id),panel=document.getElementById('flow-props');if(!panel||!d)return;const n=d.nodes.find(x=>x.id===s.selected);
  const field=(label,key,val,type='text')=>`<label>${label}<input type="${type}" value="${esc(String(val??''))}" onchange="flowSet('${key}',this.${type==='checkbox'?'checked':'value'})" ${type==='checkbox'&&val?'checked':''}></label>`;
  panel.innerHTML=`<h3>${flowL('Página PDF','PDF page')}</h3><label>${flowL('Título','Title')}<input value="${esc(d.title||'')}" onchange="flowSetDiagram('title',this.value)"></label><label>${flowL('Orientación','Orientation')}<select onchange="flowSetDiagram('orientation',this.value)"><option value="landscape" ${d.orientation!=='portrait'?'selected':''}>${flowL('Horizontal','Landscape')}</option><option value="portrait" ${d.orientation==='portrait'?'selected':''}>${flowL('Vertical','Portrait')}</option></select></label><small>${flowL('El diagrama se ajusta automáticamente a una sola página A4 al exportar.','The diagram automatically fits one A4 page when exported.')}</small>${n?`<h3>${flowL('Burbuja seleccionada','Selected node')}</h3><label>${flowL('Texto','Text')}<textarea onchange="flowSet('text',this.value)">${esc(n.text)}</textarea></label><label>${flowL('Forma','Shape')}<select onchange="flowSet('shape',this.value)">${[['round',flowL('Redondeada','Rounded')],['rect',flowL('Rectángulo','Rectangle')],['ellipse',flowL('Óvalo','Ellipse')],['diamond',flowL('Rombo','Diamond')]].map(([v,l])=>`<option value="${v}" ${n.shape===v?'selected':''}>${l}</option>`).join('')}</select></label>${field('X','x',n.x,'number')}${field('Y','y',n.y,'number')}${field(flowL('Ancho','Width'),'w',n.w,'number')}${field(flowL('Alto','Height'),'h',n.h,'number')}${field(flowL('Tamaño de letra','Font size'),'fontSize',n.fontSize,'number')}<label>${flowL('Alineación','Alignment')}<select onchange="flowSet('align',this.value)">${['left','center','right'].map(v=>`<option value="${v}" ${n.align===v?'selected':''}>${v}</option>`).join('')}</select></label><label><input type="checkbox" ${n.bold?'checked':''} onchange="flowSet('bold',this.checked)"> ${flowL('Negrita','Bold')}</label><label><input type="checkbox" ${n.italic?'checked':''} onchange="flowSet('italic',this.checked)"> ${flowL('Cursiva','Italic')}</label>${field(flowL('Color de burbuja','Node color'),'color',n.color,'color')}${field(flowL('Color del texto','Text color'),'textColor',n.textColor,'color')}`:''}<h3>${flowL('Flechas','Arrows')} (${d.edges.length})</h3>${d.edges.map((e,i)=>`<div class="flow-edge-item">${i+1}. ${esc(d.nodes.find(n=>n.id===e.from)?.text||'?').slice(0,18)} → ${esc(d.nodes.find(n=>n.id===e.to)?.text||'?').slice(0,18)} <button onclick="flowRemoveEdge('${e.id}')">✕</button></div>`).join('')}`;
@@ -657,7 +732,7 @@ function mishuPdfPrintHTML(settings){
  const content=source.cloneNode(true);
  if(settings.continuous)content.querySelectorAll('.pdf-note').forEach(n=>{n.style.breakBefore='auto';n.style.pageBreakBefore='auto'});
  const plain=root.classList.contains('plain');
- const styles=[...document.querySelectorAll('style')].map(el=>el.textContent||'').join('\n');
+ const styles=(document.querySelector('#mishu-pdf-preview > style')?.textContent||'').replaceAll('.mishu-pdf-root.plain','body.plain').replaceAll('.mishu-pdf-root #document','#document').replaceAll('.mishu-pdf-root .','.') .replaceAll('.mishu-pdf-root','body');
  const paperHeight=settings.continuous?Math.max(settings.h,Math.min(5000,Math.ceil(source.scrollHeight*25.4/96+30))):settings.h;
  const css=`@page{size:${settings.w}mm ${paperHeight}mm;margin:12mm}html,body{margin:0!important;padding:0!important;background:white!important}body{font-family:Arial,sans-serif;color:#222}#document{padding:0!important;width:100%;overflow:visible!important}.pdf-actions{display:none!important}.pdf-note{break-inside:auto}.pdf-node{break-inside:avoid-page}.pdf-content{overflow-wrap:anywhere;white-space:pre-wrap}.pdf-table-wrap{overflow:visible;max-width:100%}.pdf-flowchart svg{display:block;width:100%;height:auto;max-height:90vh}.mishu-data-table{width:100%;border-collapse:collapse}.mishu-data-table td,.mishu-data-table th{border:1px solid #aaa;padding:4px}img,video,iframe{max-width:100%}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}`;
  const theme=root.getAttribute('style')||'';
@@ -672,14 +747,24 @@ function mishuPrintCurrentPDF(){
  }else if(native&&typeof native.printHtml==='function'){
   native.printHtml(doc.html,'Mishu PDF',settings.orientation);
  }else{
-  // Print from an isolated iframe to avoid printing the app's navigation and dialogs.
-  const iframe=document.createElement('iframe');
-  iframe.style.cssText='position:fixed;left:-10000px;top:0;width:1000px;height:1000px;border:0';
-  document.body.appendChild(iframe);
-  const win=iframe.contentWindow;
-  if(!win){iframe.remove();alert('PDF print unavailable');return}
-  iframe.onload=()=>{setTimeout(()=>{win.focus();win.print();setTimeout(()=>iframe.remove(),30000)},500)};
-  win.document.open();win.document.write(doc.html);win.document.close();
+  // Off-screen iframes are blank in some browsers. Print a real visible document.
+  const win=window.open('','_blank');
+  if(win){
+   win.document.open();win.document.write(doc.html);win.document.close();
+   win.addEventListener('load',()=>{win.focus();win.print()},{once:true});
+   // document.write can finish loading before load listeners are attached.
+   if(win.document.readyState==='complete')setTimeout(()=>{win.focus();win.print()},250);
+  }else{
+   // Popup blocked: print the already visible preview in the same document.
+   const preview=document.getElementById('mishu-pdf-preview');
+   if(!preview)return;
+   const paper=document.createElement('style');paper.id='mishu-print-fallback';
+   paper.textContent=`@page{size:${settings.w}mm ${doc.height}mm;margin:12mm}@media print{body>*:not(#mishu-pdf-preview){display:none!important}#mishu-pdf-preview{position:static!important;display:block!important;width:100%!important;height:auto!important;overflow:visible!important;background:white!important}#mishu-pdf-preview .pdf-actions{display:none!important}#mishu-pdf-preview #document{display:block!important;overflow:visible!important}.pdf-note{break-inside:auto}}`;
+   document.head.appendChild(paper);
+   const cleanup=()=>{paper.remove();window.removeEventListener('afterprint',cleanup)};
+   window.addEventListener('afterprint',cleanup);
+   window.print();
+  }
  }
 }
 function exportPDF(){
@@ -850,11 +935,11 @@ function parsePastedHierarchy(source){
  const lines=String(source).replace(/\r\n?/g,'\n').split('\n');const roots=[],stack=[];
  for(let i=0;i<lines.length;i++){
   const raw=lines[i];if(!raw.trim())continue;
-  const match=raw.match(/^\s*(>*)\s*(.*)$/);const depth=match[1].length,title=match[2].trim();
+  const match=raw.match(/^\s*(>*)\s*(.*)$/);const depth=match[1].length;const segment=match[2];const splitAt=segment.indexOf('<');const title=(splitAt<0?segment:segment.slice(0,splitAt)).trim();const content=splitAt<0?'':segment.slice(splitAt+1).trim();
   if(!title)throw Error('Línea '+(i+1)+': falta el texto');
   if(depth>stack.length)throw Error('Línea '+(i+1)+': jerarquía sin padre');
   if(depth>40)throw Error('Demasiados niveles');
-  const item={id:uid(),title,content:'',children:[],open:true,media:[]};
+  const item={id:uid(),title,content,children:[],open:true,media:[]};
   if(depth===0)roots.push(item);else stack[depth-1].children.push(item);
   stack.length=depth;stack.push(item);
  }

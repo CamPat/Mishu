@@ -203,3 +203,17 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Orientación vertical/horizontal, tamaños A3/A4/A5/Carta/Legal/personalizado y modo página continua.
 - Impresión aislada en navegador y tamaño personalizado nativo Android; tablas incluidas en PDF.
 - Límite técnico del modo continuo: 5000 mm de alto; documentos más largos pueden paginarse.
+
+## 4.33 — PDF en blanco y delimitador <
+- Se elimina la impresión en iframe oculto; se imprime documento visible en nueva ventana y hay alternativa en la misma pantalla.
+- Se imprimen los estilos de PDF en vez de heredar todos los estilos de navegación de Mishu.
+- Al escribir < en el título de un tema/subtema, todo lo que sigue se traslada al campo de texto del mismo tema.
+- El pegado jerárquico también acepta `> Subtema < descripción`.
+
+## 4.34 — Diagramas automáticos numerados
+- Cuadros rectangulares con números estables y texto editable.
+- Panel superior de cuadros con añadir/editar/eliminar.
+- Panel de conexiones con padre, hermano, hijo; números separados por comas y flechas direccionales.
+- Reorganización automática por capas con ordenación baricéntrica para reducir cruces; sin solapamiento entre cuadros dentro del lienzo en condiciones normales.
+- Diagrama SVG adaptado al tamaño de página de exportación.
+- Limitación: grafos muy densos, ciclos o demasiados cuadros pueden presentar cruces o texto pequeño.

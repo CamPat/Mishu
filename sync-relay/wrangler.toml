@@ -1,9 +1,0 @@
-name = "mishu-device-sync"
-main = "worker.js"
-compatibility_date = "2026-11-01"
-
-# Create a KV namespace: npx wrangler kv namespace create PAIRS
-# Paste the returned ID here before deploying.
-[[kv_namespaces]]
-binding = "PAIRS"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"

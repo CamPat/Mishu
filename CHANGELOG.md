@@ -197,3 +197,9 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Android: impresión nativa mediante PrintManager y WebView dedicada, compatible con Guardar como PDF.
 - Vista previa de notas y diagramas: botón Exportar/Guardar PDF utiliza impresión nativa en Android; en navegador conserva window.print().
 - Se aplica A4 vertical a notas y orientación seleccionada a diagramas.
+
+## 4.32 — PDF biblioteca y formatos
+- Exportación por biblioteca completa, colección o carpeta, incluidas carpetas vacías y títulos jerárquicos.
+- Orientación vertical/horizontal, tamaños A3/A4/A5/Carta/Legal/personalizado y modo página continua.
+- Impresión aislada en navegador y tamaño personalizado nativo Android; tablas incluidas en PDF.
+- Límite técnico del modo continuo: 5000 mm de alto; documentos más largos pueden paginarse.

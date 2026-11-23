@@ -87,7 +87,8 @@ public class MainActivity extends Activity {
  private void deliverExternalFile(){if(!pageReady||pendingExternalFile==null)return;String data=pendingExternalFile;pendingExternalFile=null;web.evaluateJavascript("window.mishuOpenExternal("+JSONObject.quote(data)+")",null);}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);pendingExternalFile=readMishuIntent(intent);deliverExternalFile();}
  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){super.onActivityResult(requestCode,resultCode,data);if(requestCode==PICK_FILE&&fileCallback!=null){Uri[] result=WebChromeClient.FileChooserParams.parseResult(resultCode,data);fileCallback.onReceiveValue(result);fileCallback=null;}}
- private void printPdfHtml(String html,String title,String orientation){
+ private void printPdfHtml(String html,String title,String orientation){printPdfHtmlConfigured(html,title,"landscape".equals(orientation)?297:210,"landscape".equals(orientation)?210:297);}
+ private void printPdfHtmlConfigured(String html,String title,double widthMm,double heightMm){
   if(html==null||html.isEmpty()||html.length()>8*1024*1024)return;
   runOnUiThread(()->{
    try{
@@ -103,7 +104,9 @@ public class MainActivity extends Activity {
       view.postDelayed(()->{
        try{
         PrintManager manager=(PrintManager)getSystemService(Context.PRINT_SERVICE);
-        PrintAttributes.MediaSize media="landscape".equals(orientation)?PrintAttributes.MediaSize.ISO_A4.asLandscape():PrintAttributes.MediaSize.ISO_A4.asPortrait();
+        int widthMils=(int)Math.round(Math.max(70,Math.min(1200,widthMm))*1000/25.4);
+        int heightMils=(int)Math.round(Math.max(70,Math.min(5000,heightMm))*1000/25.4);
+        PrintAttributes.MediaSize media=new PrintAttributes.MediaSize("MISHU_CUSTOM","Mishu custom",widthMils,heightMils);
         PrintAttributes attrs=new PrintAttributes.Builder().setMediaSize(media).setResolution(new PrintAttributes.Resolution("pdf","PDF",300,300)).setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
         manager.print(title==null?"Mishu PDF":title,view.createPrintDocumentAdapter(title==null?"Mishu PDF":title),attrs);
        }catch(Exception e){Log.e("Mishu","PDF printing failed",e);}
@@ -117,6 +120,7 @@ public class MainActivity extends Activity {
  class Bridge{
   @JavascriptInterface public void save(String json){storage.save(json);}
   @JavascriptInterface public void printHtml(String html,String title,String orientation){printPdfHtml(html,title,orientation);}
+  @JavascriptInterface public void printHtmlConfigured(String html,String title,double widthMm,double heightMm){printPdfHtmlConfigured(html,title,widthMm,heightMm);}
  }
  @Override public void onBackPressed(){web.evaluateJavascript("if(document.querySelector('dialog[open]'))closeModal();else back();",null);}
  @Override public void onConfigurationChanged(Configuration newConfig){super.onConfigurationChanged(newConfig); /* Keep the current WebView and note visible across rotation. */}

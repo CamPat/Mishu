@@ -631,16 +631,55 @@ function flowExportPDF(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)
 }
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('mishu-flow-print')){document.getElementById('mishu-flow-print').remove();document.getElementById('mishu-flow-print-page')?.remove();}else if(flowSession)flowClose()}});
 
-function mishuPrintCurrentPDF(){
+const mishuPdfSizes={A3:[297,420],A4:[210,297],A5:[148,210],Letter:[215.9,279.4],Legal:[215.9,355.6]};
+function mishuPDFSettings(){
+ const frame=document.getElementById('mishu-pdf-preview');
+ const size=frame?.querySelector('#mishuPdfSize')?.value||'A4';
+ const orientation=frame?.querySelector('#mishuPdfOrientation')?.value||'portrait';
+ const continuous=!!frame?.querySelector('#mishuPdfContinuous')?.checked;
+ const customW=Number(frame?.querySelector('#mishuPdfWidth')?.value)||210;
+ const customH=Number(frame?.querySelector('#mishuPdfHeight')?.value)||297;
+ let [w,h]=size==='Custom'?[customW,customH]:(mishuPdfSizes[size]||mishuPdfSizes.A4);
+ w=Math.max(70,Math.min(1200,w));h=Math.max(70,Math.min(1200,h));
+ if(orientation==='landscape'&&w<h)[w,h]=[h,w];
+ if(orientation==='portrait'&&w>h)[w,h]=[h,w];
+ return {size,orientation,continuous,w,h};
+}
+function mishuPDFSizeChanged(){
+ const el=document.querySelector('#mishu-pdf-preview #mishuPdfCustom');
+ if(el)el.style.display=document.querySelector('#mishu-pdf-preview #mishuPdfSize')?.value==='Custom'?'flex':'none';
+}
+function mishuPdfPrintHTML(settings){
  const root=document.querySelector('#mishu-pdf-preview .mishu-pdf-root');
- if(!root){alert('No hay vista previa para exportar.');return}
- if(window.MishuNative&&typeof window.MishuNative.printHtml==='function'){
-  const style=document.querySelector('#mishu-pdf-preview > style')?.textContent||'';
-  const originalStyles=[...document.querySelectorAll('style')].map(x=>x.textContent||'').join('\n');
-  const html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+originalStyles+'\n'+style+'\n@page{size:A4 portrait;margin:12mm}body{margin:0!important;padding:0!important;background:white!important}#mishu-pdf-preview{position:static!important;overflow:visible!important;height:auto!important} .pdf-actions{display:none!important} .mishu-pdf-root{min-height:0!important} .pdf-flowchart svg{max-width:100%;height:auto} @media print{.pdf-actions{display:none!important}}</style></head><body><div id="mishu-pdf-preview">'+root.outerHTML+'</div></body></html>';
-  window.MishuNative.printHtml(html,'Mishu - PDF','portrait');
+ if(!root)return null;
+ const source=root.querySelector('#document');
+ if(!source)return null;
+ const content=source.cloneNode(true);
+ if(settings.continuous)content.querySelectorAll('.pdf-note').forEach(n=>{n.style.breakBefore='auto';n.style.pageBreakBefore='auto'});
+ const plain=root.classList.contains('plain');
+ const styles=[...document.querySelectorAll('style')].map(el=>el.textContent||'').join('\n');
+ const paperHeight=settings.continuous?Math.max(settings.h,Math.min(5000,Math.ceil(source.scrollHeight*25.4/96+30))):settings.h;
+ const css=`@page{size:${settings.w}mm ${paperHeight}mm;margin:12mm}html,body{margin:0!important;padding:0!important;background:white!important}body{font-family:Arial,sans-serif;color:#222}#document{padding:0!important;width:100%;overflow:visible!important}.pdf-actions{display:none!important}.pdf-note{break-inside:auto}.pdf-node{break-inside:avoid-page}.pdf-content{overflow-wrap:anywhere;white-space:pre-wrap}.pdf-table-wrap{overflow:visible;max-width:100%}.pdf-flowchart svg{display:block;width:100%;height:auto;max-height:90vh}.mishu-data-table{width:100%;border-collapse:collapse}.mishu-data-table td,.mishu-data-table th{border:1px solid #aaa;padding:4px}img,video,iframe{max-width:100%}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}`;
+ const theme=root.getAttribute('style')||'';
+ return {html:`<!doctype html><html><head><meta charset="utf-8"><title>Mishu PDF</title><style>${styles}\n${css}</style></head><body class="${plain?'plain':''}" style="${theme}">${content.outerHTML}</body></html>`,height:paperHeight};
+}
+function mishuPrintCurrentPDF(){
+ const settings=mishuPDFSettings(),doc=mishuPdfPrintHTML(settings);
+ if(!doc){alert(mishuL('No hay vista previa para exportar.','No PDF preview to export.'));return}
+ const native=window.MishuNative;
+ if(native&&typeof native.printHtmlConfigured==='function'){
+  native.printHtmlConfigured(doc.html,'Mishu PDF',settings.w,doc.height);
+ }else if(native&&typeof native.printHtml==='function'){
+  native.printHtml(doc.html,'Mishu PDF',settings.orientation);
  }else{
-  window.print();
+  // Print from an isolated iframe to avoid printing the app's navigation and dialogs.
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;left:-10000px;top:0;width:1000px;height:1000px;border:0';
+  document.body.appendChild(iframe);
+  const win=iframe.contentWindow;
+  if(!win){iframe.remove();alert('PDF print unavailable');return}
+  iframe.onload=()=>{setTimeout(()=>{win.focus();win.print();setTimeout(()=>iframe.remove(),30000)},500)};
+  win.document.open();win.document.write(doc.html);win.document.close();
  }
 }
 function exportPDF(){
@@ -648,15 +687,44 @@ function exportPDF(){
   printNotePDF(true);
 }
 function compositePDFUI(){
-  if(current)flushEdits();
-  const collections=db.collections.map(c=>({c,folders:db.folders.filter(f=>f.collectionId===c.id)}));
-  modal(`<h3>PDF compuesto</h3><p>Selecciona una o varias colecciones, o carpetas específicas. Se incluirán sus notas en el orden actual de la biblioteca.</p><div class="composite-picker" style="max-height:55vh;overflow:auto">${collections.map(({c,folders})=>`<section class="composite-collection" style="border:1px solid #e6dced;border-radius:10px;padding:10px;margin:8px 0"><label><input type="checkbox" class="pdf-collection" data-id="${esc(c.id)}" onchange="compositeCollectionChanged(this)"> <strong>${esc(c.name)}</strong></label><div class="composite-folders" style="padding-left:20px">${folders.map(f=>`<label><input type="checkbox" class="pdf-folder" data-id="${esc(f.id)}" data-parent="${esc(c.id)}" onchange="compositeFolderChanged(this)"> ${esc(f.name)} <small>(${folderNotes(f.id).length} notas)</small></label>`).join('')}</div></section>`).join('')}</div><p id="compositeCount" aria-live="polite">0 notas seleccionadas</p><div class="toolbar"><button class="primary" onclick="buildCompositePDF()">Vista previa del PDF</button><button onclick="closeModal()">Cancelar</button></div>`);
+ if(current)flushEdits();
+ const collections=db.collections.map(c=>({c,folders:db.folders.filter(f=>f.collectionId===c.id)}));
+ modal(`<h3>${mishuL('Exportar biblioteca a PDF','Export library to PDF')}</h3>
+ <p>${mishuL('Selecciona toda la biblioteca, colecciones o carpetas.','Select the whole library, collections, or folders.')}</p>
+ <div class="toolbar"><button onclick="compositeSelectAll(true)">${mishuL('Seleccionar todo','Select all')}</button><button onclick="compositeSelectAll(false)">${mishuL('Deseleccionar todo','Deselect all')}</button></div>
+ <div class="composite-picker" style="max-height:48vh;overflow:auto">${collections.map(({c,folders})=>`<section class="composite-collection" style="border:1px solid #e6dced;border-radius:10px;padding:10px;margin:8px 0"><label><input type="checkbox" class="pdf-collection" data-id="${esc(c.id)}" onchange="compositeCollectionChanged(this)"> <strong>${esc(c.name)}</strong></label><div class="composite-folders" style="padding-left:20px">${folders.map(f=>`<label style="display:block"><input type="checkbox" class="pdf-folder" data-id="${esc(f.id)}" data-parent="${esc(c.id)}" onchange="compositeFolderChanged(this)"> ${esc(f.name)} <small>(${folderNotes(f.id).length} ${mishuL('notas','notes')})</small></label>`).join('')}</div></section>`).join('')}</div>
+ <p id="compositeCount" aria-live="polite">0</p>
+ <div class="toolbar"><button class="primary" onclick="buildCompositePDF()">${mishuL('Vista previa del PDF','PDF preview')}</button><button onclick="closeModal()">${mishuL('Cancelar','Cancel')}</button></div>`);
 }
-function compositeCollectionChanged(el){document.querySelectorAll('.pdf-folder').forEach(f=>{if(f.dataset.parent===el.dataset.id)f.checked=el.checked});updateCompositeCount()}
-function compositeFolderChanged(el){const parent=document.querySelector('.pdf-collection[data-id="'+CSS.escape(el.dataset.parent)+'"]');const children=[...document.querySelectorAll('.pdf-folder')].filter(f=>f.dataset.parent===el.dataset.parent);if(parent){parent.checked=children.length>0&&children.every(f=>f.checked);parent.indeterminate=children.some(f=>f.checked)&&!parent.checked}updateCompositeCount()}
-function compositeSelectedNotes(){const ids=new Set([...document.querySelectorAll('.pdf-folder:checked')].map(x=>x.dataset.id));const notes=[];for(const c of db.collections)for(const f of db.folders.filter(x=>x.collectionId===c.id))if(ids.has(f.id))notes.push(...folderNotes(f.id));return notes}
-function updateCompositeCount(){const el=$('compositeCount');if(el)el.textContent=compositeSelectedNotes().length+' notas seleccionadas'}
-function buildCompositePDF(){const notes=compositeSelectedNotes();if(!notes.length){alert('Selecciona al menos una carpeta que contenga notas.');return}closeModal();printPDFDocument(notes,'PDF compuesto · Mishu')}
+function compositeSelectAll(checked){
+ document.querySelectorAll('.pdf-folder,.pdf-collection').forEach(el=>{el.checked=checked;el.indeterminate=false});updateCompositeCount();
+}
+function compositeCollectionChanged(el){
+ document.querySelectorAll('.pdf-folder').forEach(f=>{if(f.dataset.parent===el.dataset.id)f.checked=el.checked});
+ updateCompositeCount();
+}
+function compositeFolderChanged(el){
+ const parent=[...document.querySelectorAll('.pdf-collection')].find(x=>x.dataset.id===el.dataset.parent);
+ const children=[...document.querySelectorAll('.pdf-folder')].filter(f=>f.dataset.parent===el.dataset.parent);
+ if(parent){parent.checked=children.length>0&&children.every(f=>f.checked);parent.indeterminate=children.some(f=>f.checked)&&!parent.checked}
+ updateCompositeCount();
+}
+function compositeSelectedFolders(){
+ const selected=new Set([...document.querySelectorAll('.pdf-folder:checked')].map(x=>x.dataset.id));
+ const entireCollections=new Set([...document.querySelectorAll('.pdf-collection:checked')].map(x=>x.dataset.id));
+ return db.collections.flatMap(c=>db.folders.filter(f=>f.collectionId===c.id&&(selected.has(f.id)||entireCollections.has(c.id))).map(f=>({collection:c,folder:f})));
+}
+function compositeSelectedNotes(){return compositeSelectedFolders().flatMap(({folder})=>folderNotes(folder.id))}
+function updateCompositeCount(){
+ const el=$('compositeCount');if(el)el.textContent=`${compositeSelectedFolders().length} ${mishuL('carpetas','folders')} · ${compositeSelectedNotes().length} ${mishuL('notas','notes')}`;
+}
+function buildCompositePDF(){
+ const folders=compositeSelectedFolders();
+ if(!folders.length){alert(mishuL('Selecciona al menos una carpeta.','Select at least one folder.'));return}
+ const notes=folders.flatMap(({folder})=>folderNotes(folder.id));
+ const sections=folders.map(({collection,folder})=>({collection:collection.name,folder:folder.name,notes:folderNotes(folder.id)}));
+ closeModal();printPDFDocument(notes,mishuL('Biblioteca Mishu','Mishu Library'),sections);
+}
 function printNotePDF(keepStyle=true){
   flushEdits();
   const n=findNote(current);if(!n)return;
@@ -671,7 +739,7 @@ function closePDFPreview(fromHistory=false){
 }
 window.addEventListener('popstate',()=>{if(pdfPreviewFrame)closePDFPreview(true)});
 function renderMarkedTextForPDF(node){const clean={...node,marks:(node.marks||[]).filter(m=>m.type!=='hidden')};return renderMarkedText(clean,false)}
-function printPDFDocument(notes,documentTitle){
+function printPDFDocument(notes,documentTitle,sections=null){
   if(pdfPreviewFrame)closePDFPreview();
   const frame=document.createElement('div');
   frame.id='mishu-pdf-preview';frame.setAttribute('role','region');frame.setAttribute('aria-label','Vista previa PDF');
@@ -686,8 +754,10 @@ function printPDFDocument(notes,documentTitle){
   const lineWeight=Math.max(1,Math.min(12,Number(s.weight)||2));
   const lineSpacing=Math.max(0,Math.min(40,Number(s.spacing)||10));
   const pattern=['dotted','dashed','solid'].includes(s.pattern)?s.pattern:'solid';
-  const walk=(nodes,depth=0)=>nodes.map(x=>`<section class="pdf-node" style="margin-left:${Math.min(depth,12)*12}px"><h3 style="font-size:${Math.max(12,fontSize+5-depth*2)}px">${esc(x.title)}</h3><div class="pdf-content">${renderMarkedTextForPDF(x)}</div>${(x.diagrams||[]).map(d=>`<div class="pdf-flowchart">${flowSVG(d)}</div>`).join('')}${walk(x.children||[],depth+1)}</section>`).join('');
+  const pdfTables=x=>(x.tables||[]).map(t=>`<div class="pdf-table-wrap"><table class="mishu-data-table"><tbody>${(t.rows||[]).map((row,r)=>`<tr>${row.map((v,c)=>{const merged=(t.merges||[]).find(m=>r>=m.r&&r<m.r+m.rs&&c>=m.c&&c<m.c+m.cs);if(merged&&(merged.r!==r||merged.c!==c))return '';const tag=r===0?'th':'td';const bg=t.colors?.[`${r},${c}`]||'';const media=[...(t.cellMedia?.[`${r},${c}`]||[])].filter(m=>m&&typeof m==='object');return `<${tag} ${merged?`rowspan="${merged.rs}" colspan="${merged.cs}"`:''} style="${/^#[0-9a-f]{6}$/i.test(bg)?`background:${bg};`:''}min-width:${Math.max(60,Math.min(700,Number(t.columnWidths?.[c])||100))}px">${esc(String(v??''))}${media.map(m=>`<p><a href="${esc(m.url||'')}">${esc(m.label||m.type||'Multimedia')}</a></p>`).join('')}</${tag}>`}).join('')}</tr>`).join('')}</tbody></table></div>`).join('');
+  const walk=(nodes,depth=0)=>nodes.map(x=>`<section class="pdf-node" style="margin-left:${Math.min(depth,12)*12}px"><h3 style="font-size:${Math.max(12,fontSize+5-depth*2)}px">${esc(x.title)}</h3><div class="pdf-content">${renderMarkedTextForPDF(x)}</div>${pdfTables(x)}${(x.diagrams||[]).map(d=>`<div class="pdf-flowchart">${flowSVG(d)}</div>`).join('')}${walk(x.children||[],depth+1)}</section>`).join('');
   const themed=`--pdf-bg:${cssColor(s.bg,'#fff')};--pdf-card:${cssColor(s.card,'#fff')};--pdf-entry:${cssColor(s.entry,'#fff')};--pdf-ink:${cssColor(s.ink,'#292332')};--pdf-title:${cssColor(s.title,'#292332')};--pdf-line:${cssColor(s.line,'#c4a8db')};--pdf-font:${safeFont||'system-ui'};--pdf-fs:${fontSize}px;--pdf-weight:${lineWeight}px;--pdf-spacing:${lineSpacing}px;--pdf-pattern:${pattern};`;
+  const pdfBody=sections?sections.map(({collection,folder,notes:folderNotesList})=>`<section class="pdf-folder-section"><h1>${esc(collection)}</h1><h2>${esc(folder)}</h2>${folderNotesList.length?folderNotesList.map(n=>`<section class="pdf-note"><h3>${esc(n.title)}</h3>${walk(n.nodes||[])}</section>`).join(''):`<p>${mishuL('Carpeta vacía','Empty folder')}</p>`}</section>`).join(''):notes.map((n,i)=>`<section class="pdf-note" style="${i?'break-before:page;page-break-before:always':''}"><h1>${esc(n.title)}</h1>${walk(n.nodes||[])}</section>`).join('');
   const pdfHtml=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(documentTitle)} — PDF</title><style>
   @page{size:A4;margin:18mm}*{box-sizing:border-box}body{margin:0;padding:12px;background:var(--pdf-bg);color:var(--pdf-ink);font-family:var(--pdf-font);font-size:var(--pdf-fs)}
   .pdf-actions{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;background:#fff;color:#222;padding:10px;border-bottom:1px solid #ddd}
@@ -696,7 +766,7 @@ function printPDFDocument(notes,documentTitle){
   .pdf-node{border-left:var(--pdf-weight) var(--pdf-pattern) var(--pdf-line);padding:4px 0 4px var(--pdf-spacing);background:var(--pdf-entry);margin-top:8px;break-inside:avoid-page}
   .pdf-note{break-inside:auto}.pdf-content{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}body.plain{--pdf-bg:#fff!important;--pdf-card:#fff!important;--pdf-entry:#fff!important;--pdf-ink:#000!important;--pdf-title:#000!important;--pdf-line:transparent!important;--pdf-font:Arial,sans-serif!important;--pdf-fs:16px!important;--pdf-weight:0px!important;--pdf-spacing:0px!important}body.plain .pdf-node{border:0;background:transparent}
   @media print{.pdf-actions{display:none!important}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}#document{padding:0}}
-</style></head><body style="${themed}"><div class="pdf-actions"><button onclick="parent.closePDFPreview()">← Volver</button><label><input type="checkbox" id="plainPDF" onchange="document.body.classList.toggle('plain',this.checked)"> Sin estilo</label><button onclick="window.print()">Exportar / guardar PDF</button></div><article id="document">${notes.map((n,i)=>`<section class="pdf-note" style="${i?'break-before:page;page-break-before:always':''}"><h1>${esc(n.title)}</h1>${walk(n.nodes||[])}</section>`).join('')}</article></body></html>`;
+</style></head><body style="${themed}"><div class="pdf-actions"><button onclick="parent.closePDFPreview()">← Volver</button><label><input type="checkbox" id="plainPDF" onchange="document.body.classList.toggle('plain',this.checked)"> Sin estilo</label><label>${mishuL('Orientación','Orientation')} <select id="mishuPdfOrientation"><option value="portrait">${mishuL('Vertical','Portrait')}</option><option value="landscape">${mishuL('Horizontal','Landscape')}</option></select></label><label>${mishuL('Papel','Paper')} <select id="mishuPdfSize" onchange="mishuPDFSizeChanged()"><option>A4</option><option>A3</option><option>A5</option><option>Letter</option><option>Legal</option><option value="Custom">${mishuL('Personalizado','Custom')}</option></select></label><span id="mishuPdfCustom" style="display:none;gap:5px;align-items:center"><input id="mishuPdfWidth" type="number" value="210" min="70" max="1200" style="width:65px" aria-label="Ancho mm">×<input id="mishuPdfHeight" type="number" value="297" min="70" max="1200" style="width:65px" aria-label="Alto mm"> mm</span><label><input id="mishuPdfContinuous" type="checkbox"> ${mishuL('Una página continua','One continuous page')}</label><button onclick="mishuPrintCurrentPDF()">${mishuL('Exportar / guardar PDF','Export / save PDF')}</button></div><article id="document">${pdfBody}</article></body></html>`;
   // Render PDF preview directly in this WebView DOM. Android WebView can leave
   // srcdoc iframes blank even though their markup was generated successfully.
   const parsed=new DOMParser().parseFromString(pdfHtml,'text/html');

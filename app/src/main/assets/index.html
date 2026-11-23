@@ -549,7 +549,19 @@ function createDemoCollection(){if(!confirm('¿Crear una colección de ejemplo c
 // Stable v1 interchange: future versions must continue reading this envelope.
 function mishuOpenExternal(payload){try{const a=JSON.parse(payload);if(a.format==='mishu-item'&&a.version===1){if(current)flushEdits();goto(null);importMishuItem(a)}else if(valid(a)){if(!confirm('Este archivo es una copia completa. ¿Reemplazar la biblioteca actual?'))return;exportBackup();db=a;save();goto(null);alert('Biblioteca importada')}else throw Error('Formato .json no reconocido')}catch(e){alert('No se pudo abrir el archivo .json: '+e.message)}}
 window.mishuOpenExternal=mishuOpenExternal;
-function exportBackup(){let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});download(blob,'Mishu_backup_'+new Date().toISOString().slice(0,10)+'.json')}function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}function importBackup(){modal('<h3>Importar copia de seguridad (.json)</h3><p>Se reemplazará la biblioteca actual después de validar la copia. Exporta una copia antes.</p><input type="file" id="backupFile" accept=".json,application/json"><button onclick="doImport()">Importar</button><button onclick="closeModal()">Cancelar</button>')}async function doImport(){let f=$('backupFile').files[0];if(!f)return;try{if(!f.name.toLowerCase().endsWith('.json'))throw Error('Solo se admiten archivos .json');let x=JSON.parse(await f.text());if(!valid(x))throw Error('Formato no compatible');if(!confirm('¿Reemplazar la biblioteca actual?'))return;exportBackup();db=x;save();closeModal();render()}catch(e){alert('Error al importar: '+e.message)}}
+function exportBackup(){let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});download(blob,'Mishu_backup_'+new Date().toISOString().slice(0,10)+'.json')}function download(blob,name){
+ const native=window.MishuNative;
+ if(native&&typeof native.saveJson==='function'&&name.toLowerCase().endsWith('.json')){
+  blob.text().then(content=>native.saveJson(content,name)).catch(e=>alert('Error al preparar JSON: '+e.message));
+  return;
+ }
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+window.mishuJsonSaveResult=function(success,message){
+ alert((success?'✓ ':'⚠ ')+message);
+};function importBackup(){modal('<h3>Importar copia de seguridad (.json)</h3><p>Se reemplazará la biblioteca actual después de validar la copia. Exporta una copia antes.</p><input type="file" id="backupFile" accept=".json,application/json"><button onclick="doImport()">Importar</button><button onclick="closeModal()">Cancelar</button>')}async function doImport(){let f=$('backupFile').files[0];if(!f)return;try{if(!f.name.toLowerCase().endsWith('.json'))throw Error('Solo se admiten archivos .json');let x=JSON.parse(await f.text());if(!valid(x))throw Error('Formato no compatible');if(!confirm('¿Reemplazar la biblioteca actual?'))return;exportBackup();db=x;save();closeModal();render()}catch(e){alert('Error al importar: '+e.message)}}
 // Offline concept map generated from the note's actual topic hierarchy.
 
 /* Mishu 4.22: all information stays in the local library. */
@@ -697,7 +709,7 @@ function mishuPrintFlowPDF(){
  const orientation=d?.orientation==='portrait'?'portrait':'landscape';
  if(window.MishuNative&&typeof window.MishuNative.printHtml==='function'){
   const html=`<!doctype html><html><head><meta charset="utf-8"><style>@page{size:A4 ${orientation};margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;height:100%;background:white}.sheet{width:100%;height:100%;padding:6mm;display:flex;align-items:center;justify-content:center;break-inside:avoid}.sheet svg{display:block;width:100%;height:100%;max-width:100%;max-height:100%}</style></head><body><div class="sheet">${page.querySelector('.flow-print-sheet')?.innerHTML||''}</div></body></html>`;
-  window.MishuNative.printHtml(html,'Mishu - Diagrama',orientation);
+  window.MishuNative.printHtmlConfigured?.(html,'Mishu - Diagrama',orientation==='portrait'?210:297,orientation==='portrait'?297:210);
  }else window.print();
 }
 function flowExportPDF(){const s=flowSession,d=flowDiagram(s.nodeId,s.id);if(!d)return;
@@ -738,6 +750,10 @@ function mishuPdfPrintHTML(settings){
  const theme=root.getAttribute('style')||'';
  return {html:`<!doctype html><html><head><meta charset="utf-8"><title>Mishu PDF</title><style>${styles}\n${css}</style></head><body class="${plain?'plain':''}" style="${theme}">${content.outerHTML}</body></html>`,height:paperHeight};
 }
+window.mishuPdfSaveResult=function(success,message){
+ const label=success?mishuL('PDF guardado correctamente.','PDF saved successfully.'):mishuL('No se pudo guardar el PDF: ','Could not save PDF: ')+message;
+ alert(label);
+};
 function mishuPrintCurrentPDF(){
  const settings=mishuPDFSettings(),doc=mishuPdfPrintHTML(settings);
  if(!doc){alert(mishuL('No hay vista previa para exportar.','No PDF preview to export.'));return}

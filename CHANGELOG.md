@@ -210,10 +210,8 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Al escribir < en el título de un tema/subtema, todo lo que sigue se traslada al campo de texto del mismo tema.
 - El pegado jerárquico también acepta `> Subtema < descripción`.
 
-## 4.34 — Diagramas automáticos numerados
-- Cuadros rectangulares con números estables y texto editable.
-- Panel superior de cuadros con añadir/editar/eliminar.
-- Panel de conexiones con padre, hermano, hijo; números separados por comas y flechas direccionales.
-- Reorganización automática por capas con ordenación baricéntrica para reducir cruces; sin solapamiento entre cuadros dentro del lienzo en condiciones normales.
-- Diagrama SVG adaptado al tamaño de página de exportación.
-- Limitación: grafos muy densos, ciclos o demasiados cuadros pueden presentar cruces o texto pequeño.
+## 4.36 — Copias JSON Android
+- Exportar biblioteca completa, colección, carpeta o nota abre ACTION_CREATE_DOCUMENT en Android.
+- Escribe JSON UTF-8 directamente al URI elegido por el usuario y muestra éxito/error.
+- Navegador mantiene descarga con Blob y URL temporal.
+- Sin permiso de almacenamiento requerido; no altera la biblioteca.

@@ -226,3 +226,12 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - Vista de lectura de dos columnas, multimedia, ocultación interactiva y opciones de impresión separadas.
 - Importación completa sin exportación automática. Límite de cinco niveles; los niveles más profundos se conservan como hermanos.
 - Fuentes web abiertas bajo demanda (requieren conexión); sin controles de color global.
+
+## 4.39 - GitHub Pages
+- Separate build and deploy jobs; upload-pages-artifact v4 with explicit artifact name.
+
+## 4.40
+- Mishu Flow y PDF en una columna, flechas verticales largas para subtemas, sangría compacta y división de temas largos entre páginas.
+
+## 4.41
+- Flow: ramas compartidas, índice, búsqueda, profundidad 1–5, ampliación multimedia y caché de fuentes bajo demanda.

@@ -221,3 +221,8 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 - PDF: abre el diálogo de impresión Android, donde se elige Guardar como PDF; conserva orientación y tamaño configurados.
 - JSON: mantiene el selector nativo ACTION_CREATE_DOCUMENT de la versión 4.36.
 - No se ha ejecutado compilación Android en este entorno.
+
+## 4.38 — Mishu Flow
+- Vista de lectura de dos columnas, multimedia, ocultación interactiva y opciones de impresión separadas.
+- Importación completa sin exportación automática. Límite de cinco niveles; los niveles más profundos se conservan como hermanos.
+- Fuentes web abiertas bajo demanda (requieren conexión); sin controles de color global.

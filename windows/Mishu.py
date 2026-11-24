@@ -9,6 +9,8 @@ from pathlib import Path
 import os
 import sys
 import webview
+import tempfile
+from playwright.sync_api import sync_playwright
 
 
 APP_DIR = Path(os.environ.get('LOCALAPPDATA') or (Path.home() / '.local' / 'share')) / 'Mishu'
@@ -20,6 +22,42 @@ class API:
     def __init__(self):
         with self.connect() as conn:
             conn.execute('CREATE TABLE IF NOT EXISTS snapshots (seq INTEGER PRIMARY KEY, payload TEXT NOT NULL, created TEXT DEFAULT CURRENT_TIMESTAMP)')
+
+    def destination(self, name, extension):
+        result = window.create_file_dialog(webview.FileDialog.SAVE, save_filename=name, file_types=(f'{extension.upper()} (*.{extension})',))
+        if not result:
+            return None
+        path = Path(result if isinstance(result, str) else result[0])
+        return path if path.suffix.lower() == '.' + extension else path.with_suffix('.' + extension)
+
+    def save_json(self, payload, name):
+        try:
+            json.loads(payload)
+            path = self.destination(name, 'json')
+            if path is None: return {'cancelled': True}
+            path.write_text(payload, encoding='utf-8')
+            return {'ok': True}
+        except Exception as e:
+            return {'error': str(e)}
+
+    def save_pdf(self, html, name, width, height):
+        try:
+            path = self.destination(name + '.pdf', 'pdf')
+            if path is None: return {'cancelled': True}
+            with sync_playwright() as pw:
+                browser = pw.chromium.launch(channel='msedge', headless=True)
+                try:
+                    page = browser.new_page()
+                    page.set_content(html, wait_until='load', timeout=30000)
+                    page.evaluate('Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,3000))])')
+                    data = page.pdf(width=f'{float(width)}mm', height=f'{float(height)}mm', prefer_css_page_size=True, print_background=True)
+                    if not data.startswith(b'%PDF-'): raise ValueError('Invalid PDF')
+                    path.write_bytes(data)
+                finally:
+                    browser.close()
+            return {'ok': True}
+        except Exception as e:
+            return {'error': str(e)}
 
     def connect(self):
         conn = sqlite3.connect(DB_PATH, timeout=15)
@@ -67,4 +105,4 @@ if __name__ == '__main__':
         payload = file.read_text(encoding='utf-8')
         window.evaluate_js('window.mishuOpenExternal(' + json.dumps(payload, ensure_ascii=True) + ')')
     window.events.loaded += open_arg
-    webview.start(private_mode=False)
+    webview.start(gui="edgechromium", private_mode=False, storage_path=str(APP_DIR / "webview"))

@@ -235,3 +235,12 @@ Mishu 4.21: Mapa conceptual automático junto al botón PDF en cada nota. Vista 
 
 ## 4.41
 - Flow: ramas compartidas, índice, búsqueda, profundidad 1–5, ampliación multimedia y caché de fuentes bajo demanda.
+
+## 4.42 — Editor de estilo simplificado
+- Solo selector de fuente; se eliminan controles de tamaño, grosor, separación y patrón. Restablecer solo modifica la fuente.
+
+## 4.43 — Acceso directo a biblioteca
+- El encabezado ¡A organizar! / Let’s organize! abre la biblioteca mediante la navegación existente, guardando las ediciones pendientes.
+
+## 4.44 Windows
+- Shared HTML with Android; native Windows JSON and PDF save dialogs. PDF via installed Microsoft Edge and Playwright. Requires Edge and WebView2. Windows build/runtime not tested.

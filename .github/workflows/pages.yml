@@ -1,45 +1,45 @@
-
-name: Deploy Mishu to GitHub Pages
-
+name: Publish Mishu Web to GitHub Pages
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
-  group: pages
+  group: github-pages
   cancel-in-progress: true
-
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Prepare website
+        shell: bash
+        run: |
+          mkdir -p _site
+          if [ -f web/index.html ]; then
+            cp -a web/. _site/
+          elif [ -f Mishu/web/index.html ]; then
+            cp -a Mishu/web/. _site/
+          else
+            echo 'ERROR: web/index.html not found' >&2
+            exit 1
+          fi
+          test -s _site/index.html
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages
+          path: _site
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Prepare website
-        run: |
-          mkdir -p _site
-          cp -r web/. _site/
-          test -f _site/index.html
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
